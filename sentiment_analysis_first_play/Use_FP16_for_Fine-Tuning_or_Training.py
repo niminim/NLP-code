@@ -18,7 +18,7 @@ tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
 # Define training arguments with fp16 enabled
 training_args = TrainingArguments(
-    output_dir="/home/nim/venv/NLP-code/results",
+    output_dir="/sentiment_analysis_first_play/results",
     report_to=[],  # Disable all external reporting (Neptune, WandB, etc.) (Neptune is default)
     logging_dir="/home/nim/venv/NLP-code/logs",  # Log locally instead (if needed)
     evaluation_strategy="epoch",
