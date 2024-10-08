@@ -1,3 +1,9 @@
+### Enable FP16 Precision for Inference
+# To use FP16 precision for inference, you can use the pipeline method and enable FP16 by specifying the device (if a GPU is available)
+# and enabling half precision.
+
+# Here's how to modify the sentiment analysis example:
+
 from transformers import pipeline
 import torch
 

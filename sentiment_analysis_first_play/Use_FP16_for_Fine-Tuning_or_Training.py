@@ -1,3 +1,6 @@
+### Use FP16 for Fine-Tuning or Training
+# If you want to fine-tune the model with FP16 precision, you can use the following setup, which leverages PyTorch’s native AMP
+# (Automatic Mixed Precision) capabilities.
 
 ####################### Train the model
 from transformers import Trainer, TrainingArguments, DistilBertForSequenceClassification, DistilBertTokenizer
