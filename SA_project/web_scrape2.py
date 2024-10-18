@@ -18,9 +18,9 @@ def get_rss_articles(rss_url):
 
     for entry in feed.entries:
         articles.append({
-            'title': entry.get('title', 'No title available'),
             'link': entry.get('link', 'No link available'),
             'published': entry.get('published', 'No published date available'),
+            'title': entry.get('title', 'No title available'),
             'summary': entry.get('summary', 'No summary available')  # Get the summary from the RSS feed
         })
 
@@ -64,9 +64,9 @@ all_articles = get_all_articles_with_full_content(rss_urls)
 
 # Print full articles along with summaries
 for article in all_articles:
-    print(f"Title: {article['title']}")
     print(f"Link: {article['link']}")
     print(f"Published: {article['published']}")
+    print(f"Title: {article['title']}")
     print(f"Summary: {article['summary']}")
     print(f"Full Content: {article['full_content'][:500]}...")  # Print first 500 characters of full article
     print("\n" + "=" * 100 + "\n")

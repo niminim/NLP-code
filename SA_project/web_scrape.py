@@ -2,8 +2,8 @@ import feedparser
 
 # Example RSS feed URL from Yahoo Finance (and others)
 rss_urls = [
-    'https://www.cnbc.com/id/10001147/device/rss/rss.html',  # CNBC
-    'http://feeds.bbci.co.uk/news/business/rss.xml',  # BBC Business
+    # 'https://www.cnbc.com/id/10001147/device/rss/rss.html',  # CNBC
+    # 'http://feeds.bbci.co.uk/news/business/rss.xml',  # BBC Business
     'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',  # Wall Street Journal (requires subscription)
     # 'https://finance.yahoo.com/news/rssindex'  # Yahoo Finance (may lack 'summary')
 ]
@@ -14,10 +14,10 @@ def get_rss_articles(rss_url):
 
     for entry in feed.entries:
         articles.append({
-            'title': entry.get('title', 'No title available'),
             'link': entry.get('link', 'No link available'),
             'published': entry.get('published', 'No published date available'),
-            'summary': entry.get('summary', 'No summary available')  # Use .get() to handle missing fields
+            'title': entry.get('title', 'No title available'),
+            'summary': entry.get('summary', 'No summary available')  # Get the summary from the RSS feed
         })
 
     return articles
@@ -34,9 +34,9 @@ def get_all_articles(rss_urls):
 all_articles = get_all_articles(rss_urls)
 
 for article in all_articles:
-    print(f"Title: {article['title']}")
     print(f"Link: {article['link']}")
     print(f"Published: {article['published']}")
-    print(f"Summary: {article['summary']}\n")
+    print(f"Title: {article['title']}")
+    print(f"Summary: {article['summary']}")
 
 
