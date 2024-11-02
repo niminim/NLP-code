@@ -1,6 +1,7 @@
 import ebooklib
 from ebooklib import epub
 from bs4 import BeautifulSoup
+import re
 
 
 # Function to read the EPUB content
@@ -30,11 +31,6 @@ epub_content = read_epub(file_path)
 # Print a portion of the EPUB content
 print(epub_content[0:2000])  # Print the first 1000 characters
 
-import re
-
-# List of chapters to find
-chapters = ['The Girl', 'The Groundskeeper', 'The Duke']
-parts = ['PART ONE', 'PART TWO', 'PART THREE', 'PART FOUR', 'PART FIVE', 'PART SIX']
 
 # Function to find all occurrences of chapters
 def find_chapter_locations(text, chapters):
@@ -43,7 +39,7 @@ def find_chapter_locations(text, chapters):
     # Loop through each chapter title
     for chapter in chapters:
         # Use re.finditer to find all occurrences of the chapter
-        matches = [(match.start(), match.end()) for match in re.finditer(re.escape(chapter), text)]
+        matches = [(match.start(), match.end()) for match in re.finditer(re.escape(chapter.upper()), text)]
 
         # Store the results for each chapter in a dictionary
         results[chapter] = matches
@@ -51,16 +47,45 @@ def find_chapter_locations(text, chapters):
     return results
 
 
+# List of chapters to find
+chapters = ['The Girl', 'The Groundskeeper', 'The Duke', 'The Son', 'The Bride',
+            'The Inspector', 'The Father', 'The Stowaway', 'The Rat'] # The chapters are with all capitals, thus using .upper() in function
+parts = ['PART ONE', 'PART TWO', 'PART THREE', 'PART FOUR', 'PART FIVE', 'PART SIX']
+
 # Find all locations of chapter titles
+parts_locations = find_chapter_locations(epub_content, parts)
 chapter_locations = find_chapter_locations(epub_content, chapters)
 
-# Print the locations
+# Print the part locations
+for part, locations in parts_locations.items():
+    print(f"'{part}' found at positions: {locations}")
+
+# Print the chapter locations
 for chapter, locations in chapter_locations.items():
     print(f"'{chapter}' found at positions: {locations}")
 
 
-chapter_start = 6650
-chapter_end = 12570
+for i, chapter in enumerate(chapters):
+
+    chapter_start = chapter_locations[chapter][0][0]
+
+    if i < len(chapters)-1:
+        chapter_end = chapter_locations[chapters[i+1]][0][0]-1
+    elif i == len(chapters)-1:
+        chapter_end = chapter_start + 20
+
+    print(f"chapter {chapter} - start {chapter_start}, end {chapter_end}, (length={chapter_end - chapter_start})")
+
+
+chapter_start = chapter_locations['The Girl'][0][0]
+chapter_end = chapter_locations['The Girl'][0][1]+50
 first_chapter = epub_content[chapter_start:chapter_end]
 print(first_chapter)
 text = first_chapter
+
+
+part_start = parts_locations['PART ONE'][0][0]
+part_end = parts_locations['PART ONE'][0][1]
+first_part = epub_content[part_start:part_end]
+print(first_part)
+text = first_part
