@@ -4,9 +4,9 @@ import torch
 
 import sys
 import os
-project_root = os.path.abspath("/TTS")
+project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS")
 sys.path.append(project_root)
-from .texts import *
+from texts import *
 
 
 # 1. Initialize TTS model from Hugging Face Hub
