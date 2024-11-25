@@ -6,7 +6,9 @@ from TTS.api import TTS
 import sys
 import os
 project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS")
-sys.path.append(project_root)
+# sys.path.append(project_root)
+
+sys.path.append("/home/nim/venv/NLP-code/TTS")
 from texts import *
 
 # Get device
