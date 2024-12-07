@@ -1,0 +1,222 @@
+import ebooklib
+from ebooklib import epub
+from bs4 import BeautifulSoup
+import re
+from pydub import AudioSegment
+import os
+
+import torch
+from TTS.api import TTS
+
+
+# Function to read the EPUB content
+def read_epub(file_path):
+    book = epub.read_epub(file_path)
+
+    # To store all the text content from the EPUB
+    all_text = []
+
+    # Iterate over the book items
+    for item in book.get_items():
+        # Only extract the documents that are of type XHTML
+        if item.get_type() == ebooklib.ITEM_DOCUMENT:
+            # Use BeautifulSoup to extract text from the HTML content
+            soup = BeautifulSoup(item.get_content(), 'html.parser')
+            all_text.append(soup.get_text())
+
+    return '\n'.join(all_text)
+
+
+# Path to your EPUB file
+file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
+
+# Reading the EPUB file
+epub_content = read_epub(file_path)
+
+# Print a portion of the EPUB content
+
+print(epub_content[8000:10000])  # Print the first 1000 characters
+
+
+# Improved function to find all occurrences of chapters
+def find_chapter_locations(text, chapters):
+    results = {}
+
+    for chapter in chapters:
+        # Match chapter titles preceded and followed by newlines
+        pattern = rf'\b{re.escape(chapter)}\b'
+        matches = [(match.start(), match.end()) for match in re.finditer(pattern, text)]
+
+        # Store the results for each chapter in a dictionary
+        results[chapter] = matches
+
+    return results
+
+# Function to filter out non-beginning occurrences
+def filter_non_beginnings(chapter_locations):
+    filtered_chapters = {}
+
+    for chapter, locations in chapter_locations.items():
+        if locations:  # Ensure there are matches
+            # Keep only the first occurrence (smallest start position)
+            first_occurrence = min(locations, key=lambda loc: loc[0])
+            filtered_chapters[chapter] = first_occurrence
+
+    return filtered_chapters
+
+# Function to sort chapters by their starting position
+def sort_chapters_by_position(chapter_locations):
+    # Convert dictionary to a list of tuples and sort by the starting position (first element of the tuple)
+    sorted_chapters = sorted(chapter_locations.items(), key=lambda x: x[1][0])
+    return sorted_chapters
+
+
+def create_chapters_dict(sorted_chapters, epub_content):
+    # the function creates a dictionary with starts and beginings of each chapter
+    chapters_dict = {}
+    for i, chapter_data in enumerate(sorted_chapters):
+        if i < len(sorted_chapters) - 1:
+
+            chapters_dict[chapter_data[0]] = {'name': epub_content[chapter_data[1][0]: chapter_data[1][1]],
+                                              'name_start': chapter_data[1][0],
+                                              'name_end': chapter_data[1][1],
+                                              'chapter_end': sorted_chapters[i + 1][1][0] - 1,
+                                              'length': sorted_chapters[i + 1][1][0] - 1 - chapter_data[1][0]
+                                              }
+        else:
+            chapters_dict[chapter_data[0]] = {'name': epub_content[chapter_data[1][0]: chapter_data[1][1]],
+                                              'name_start': chapter_data[1][0],
+                                              'name_end': chapter_data[1][1],
+                                              'chapter_end': len(epub_content),
+                                              'length':  len(epub_content) - chapter_data[1][0]
+                                              }
+
+    return chapters_dict
+
+def split_text_largest_possible(text, max_length):
+    """
+    Splits the text into the largest possible chunks based on the assigned maximum length,
+    ensuring each chunk ends at a sentence boundary.
+
+    Args:
+        text (str): The input text to split.
+        max_length (int): The maximum length of each chunk.
+
+    Returns:
+        list: A list of text chunks.
+    """
+    chunks = []
+
+    while len(text) > max_length:
+        # Take a substring of max_length
+        snippet = text[:max_length]
+
+        # Find the last "." within the snippet
+        last_dot_index = snippet.rfind(".")
+
+        # Split at the last "."
+        chunks.append(text[:last_dot_index + 1].strip())
+        text = text[last_dot_index + 1:].strip()
+
+    # Add the remaining text as the last chunk
+    if text:
+        chunks.append(text)
+
+    return chunks
+
+def concat_wavs_in_folder(folder_path, output_file, format='wav'):
+    """
+    Concatenates all WAV files in a folder in numerical order based on the part number
+    in their filenames and saves them into a single WAV file.
+
+    Args:
+        folder_path (str): Path to the folder containing WAV files.
+        output_file (str): Path to save the combined WAV file.
+
+    Returns:
+        None
+    """
+    # Function to extract the numeric part from the filename
+    def extract_number(file_name):
+        match = re.search(r'(\d+)', file_name)
+        return int(match.group(1)) if match else float('inf')  # Place non-matching files at the end
+
+    # List all WAV files in the folder
+    wav_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".wav")]
+
+    # Sort files numerically based on the extracted number
+    sorted_files = sorted(wav_files, key=extract_number)
+
+    # Initialize an empty AudioSegment for concatenation
+    combined = AudioSegment.empty()
+
+    # Concatenate the sorted audio files
+    for file_name in sorted_files:
+        file_path = os.path.join(folder_path, file_name)
+        print(f"Adding {file_name} to the combined audio.")
+        audio = AudioSegment.from_wav(file_path)
+        combined += audio
+
+    # Export the combined audio to the specified output file
+    if format.lower() == 'wav':
+        combined.export(output_file, format="wav")
+    elif format.lower() == 'mp3':
+        combined.export(output_file, format="mp3", bitrate="320")
+    print(f"All WAV files concatenated and saved as '{output_file}'.")
+
+# List of chapters to find
+chapters = ['The Final Touch', 'Night of Falling Stars', 'Honor Is All', 'Easy Pickings', 'A Dragon to the Core',
+            'Dragon Breath', "Fool's Gold", 'Scourge of the Wicked Kendragon', 'And Baby Makes Three',
+            'The First Dragonarmy Bridging Company', 'The Middle of Nowhere', "Kaz and the Dragon's Children",
+            "Into the Light", "The Best", "The Hunt"] # The chapters are with all capitals, thus using .upper() in function
+
+# Find all locations of chapter titles
+chapter_locations = find_chapter_locations(epub_content, chapters)
+chapter_locations = filter_non_beginnings(chapter_locations)
+sorted_chapters = sort_chapters_by_position(chapter_locations)
+chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
+
+# Print the chapter locations
+for chapter, locations in chapter_locations.items():
+    print(f"'{chapter}' found at positions: {locations}")
+
+
+
+chapter_idx = 7
+chapter_info = chapters_dict[chapters[chapter_idx]]
+chapter_start = chapter_info['name_start']
+chapter_end = chapter_info['chapter_end']
+chapter_text = epub_content[chapter_start:chapter_end]
+print(chapter_text)
+text = chapter_text
+
+text_chunks = split_text_largest_possible(text, max_length=600)
+
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+# tts.tts_to_file(text=chapter_text, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path="/home/nim/output_dragons_by_much_longer_kate.wav")
+
+
+# Process each chunk and generate audio
+for idx, chunk in enumerate(text_chunks):
+    folder = '/home/nim/The_Dragons_of_Krynn/' + chapter_info['name'].replace(' ', '_') + '_temp'
+    os.makedirs(folder, exist_ok=True)
+    #filepath = folder + f"output_dragons_by_much_longer_kate_part{idx+1}.wav"
+    filepath = os.path.join(folder, f"output_dragons_by_amanda_leigh2_part{idx+1}.wav")
+    #tts.tts_to_file(text=chunk, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path=filepath)
+    tts.tts_to_file(text=chunk, speaker_wav="/home/nim/Documents/amanda_leigh2.wav", language="en", file_path=filepath)
+
+
+
+# Example usage
+audio_format = 'wav'
+folder_path = '/home/nim/The_Dragons_of_Krynn/Scourge_of_the_Wicked_Kendragon_amanda_temp' # Replace with your folder path
+# folder_path = folder # Replace with your folder path
+output_file = "/home/nim/The_Dragons_of_Krynn/" + chapter_info['name'].replace(' ', '_') + f"_amanda.{audio_format}"  # Replace with your output file path
+concat_wavs_in_folder(folder_path, output_file, format=audio_format)
+
+#
+
+
+

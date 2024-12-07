@@ -134,3 +134,73 @@ After the Dune series became wildly popular, many fans began to consider Frank H
 
 Certainly my father was anything but that. In Dreamer of Dune, the biography I wrote about him, I described him as a legendary author. But in his life, he sought to avoid such a mantle. As if whispering in his own ear, Frank Herbert constantly reminded himself that he was mortal. If he had been a politician, he would have undoubtedly been an honorable one, perhaps even one of our greatest U.S. presidents. He might have attained that high office, or reached any number of other goals, had he decided to do so. But as a science fiction fan myself, I’m glad he took the course he did. Because he was prescient, his cautionary words will carry on through time.
 """
+
+text = """
+"And that's where we're supposed to spend the summer?!" Jenna scrunched up her face and glared at Max, who was sleepily leaning against the rear left window of her parents' tiny family car.
+
+"Mmm..." he hummed.
+
+"You're asleep!" she accused.
+
+Max blinked groggily. "Yeah, we've been driving for almost five hours. What did you expect me to do?"
+
+"I don't know, maybe take an interest in where we're going? Try to figure it out?"
+
+"Why? Would it change anything?" he mumbled, closing his eyes.
+
+"I don't know, maybe because it's important? Maybe because we're spending six weeks there? Maybe because this place is so insignificant it doesn’t even show up on the map?!"
+
+"It'll be fine..." Max muttered and drifted back to sleep.
+
+"Ugh!" Jenna groaned and turned her gaze back to the window. It was her first time leaving the big city, heading to the Midwest of the United States. The scenery gradually shifted from tightly packed skyscrapers to suburban homes and finally to isolated farmhouses and endless fields of farmland. Jenna didn’t like it. She felt secure among the concrete jungles of the city, where everything was close by, noise was constant, and people were always around. She couldn’t imagine what she'd do with all the quiet once they arrived.
+
+Despite her determination to stay awake and understand where they were heading, the long drive eventually wore her out, and she fell asleep.
+
+She woke up to the car stopping abruptly, with dust swirling around them. They had arrived. The place looked desolate. A small, shriveled woman stood in the doorway of an old farmhouse. Above her hung a battered wooden sign with faded letters reading, "Aunt Rose’s Pumpkin Farm." On the right side of the sign, there was a small illustration of a pumpkin.
+
+"Come on, kids, we're here," Jenna's mom said cheerfully, but Jenna knew it was fake enthusiasm.
+
+They unbuckled their seatbelts and stepped out. Aunt Rose came to greet them, inviting Jenna’s parents inside for coffee since they were the first to arrive. Jenna and Max stayed outside, listening to the muffled voices coming from inside.
+
+Jenna sat on the creaky wooden steps, resting her chin in her hands, while Max leaned on the broken railing. They surveyed the area. Like every farm Jenna had seen in movies, this one was completely isolated, surrounded only by vast pumpkin fields and clusters of trees in the distance. The house itself looked ancient and weathered, with rotting wood beams and deep scratches, as if a tornado had torn through it. Max mentioned the scratches might be from flying debris during a storm, and Jenna nodded in agreement.
+
+About forty yards from the house stood a barn with doors swaying slightly in the breeze. They assumed it stored farm equipment. There were no animals around, and Jenna thought of Mr. Whiskers, her fat and lazy cat, realizing how much she'd miss him.
+
+"What a waste of a summer. We could've been at a camp right now, lounging on a boat at some lake... but no. We're here, in the middle of nowhere, harvesting pumpkins like mules," Max sighed.
+
+"Yeah, it's really strange. This whole place feels like it popped up out of nowhere. And what's with Aunt Rose? Whose aunt is she, anyway? It seems like no one else lives here," Jenna fumed. "And what are we even supposed to do here, cut off from civilization? Look—" she held up her phone. "Barely any signal, let alone internet. It's inhumane."
+
+"Yeah, it's annoying, but there’s not much we can do. At least some people we know from school are coming."
+
+Jenna raised an eyebrow. "What? Who else is supposed to come?"
+
+"I know Andy is coming, and maybe Michael Boone and Shirley too."
+
+"Really?" For a moment, her anger subsided, and she felt a little better. "That’s nice."
+
+"Yeah..." Max replied indifferently.
+
+"Who even put this ridiculous idea in our parents’ heads?" Jenna was back to fuming.
+
+"You missed it, I think. It happened the week you were sick," he recalled.
+
+"What happened?"
+
+Max furrowed his brow, trying to remember. "There was some meeting with the parents, and this group of overly cheerful weirdos showed up handing out flyers about 'Summer at Aunt Rose’s Farm.' They emphasized it was like camp, but they’d pay us because it’s work—learning the secrets of pumpkin harvesting or something like that..."
+
+"Oh, right. I remember when my parents told me about it. It sounded so random. Really weird."
+
+"Yeah, and somehow they agreed to it pretty quickly," he said bitterly.
+
+Jenna sighed. "Honestly, I don’t think they had a choice, Maxie. They can’t really afford to send us to some camp or anything. You know that. I’m just daydreaming about those things."
+
+"That’s nonsense. We could’ve stayed home and worked there. We didn’t have to cross half the country for this."
+
+In the distance, they heard music approaching. "Hey! A car’s coming."
+
+They turned toward the driveway. Loud music blared as a black van screeched to a halt near the house, enveloped in a cloud of dust. The side door slammed open, and a dark-haired teenager jumped out, slamming it shut behind him.
+
+Someone inside the van turned down the music. "Cody! Call me after you settle in!" a male voice shouted from the front seat. Cody didn’t even glance back. He just glared at Jenna and Max, slung a black bag over his shoulder, and went to sit in the shade on a rusty plow. The van drove off, its music fading quickly, leaving silence behind.
+
+"I can’t believe it!" Jenna moved closer to Max and whispered. "That’s Cody Walker! There are rumors about him at school that stretch all the way to Canada!"
+"""

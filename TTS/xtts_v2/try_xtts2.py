@@ -35,5 +35,7 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 text = text_lost_metal
 
 
-# tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path="/home/nim/output_tress_by_much_longer_kate.wav")
-tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/michael_1_long.wav", language="en", file_path="/home/nim/output_last_metal_by_michael.wav")
+tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path="/home/nim/output_tress_by_much_longer_kate_TRY.wav")
+# tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/michael_1_long.wav", language="en", file_path="/home/nim/output_last_metal_by_michael.wav")
+
+tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/rebecca.wav", language="en", file_path="/home/nim/output_pumpkim_by_rebecca.wav")
