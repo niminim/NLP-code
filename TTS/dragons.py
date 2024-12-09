@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import re
 from pydub import AudioSegment
 import os
+
 from tqdm import tqdm
 
 import torch
@@ -84,6 +85,14 @@ def create_chapters_dict(sorted_chapters, epub_content):
 
     return chapters_dict
 
+def get_chapter_text(chapters, chapter_idx):
+    chapter_info = chapters_dict[chapters[chapter_idx]]
+    chapter_start = chapter_info['name_start']
+    chapter_end = chapter_info['chapter_end']
+    chapter_text = epub_content[chapter_start:chapter_end]
+    print(chapter_text)
+    return chapter_text, chapter_info
+
 
 def efficient_split_text_to_chunks(text, max_length):
     """
@@ -129,6 +138,12 @@ def clean_text(chunk):
     chunk = chunk.replace("...", "").replace("..", "")
     return chunk
 
+def get_ref_name(ref):
+    refs = {'kate_1_2_much_longer' : 'kate',
+            'amanda_leigh2' : 'amanda',
+            'ralph' : 'ralph'}
+
+    return refs[ref]
 
 def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     """
@@ -171,18 +186,52 @@ def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     print(f"All WAV files concatenated and saved as '{output_file}'.")
 
 
+def convert_latin_numbers_to_words(text):
+    """
+    Converts Latin numerals (I. to X.) into their word equivalents followed by '-'.
+    Does nothing for Latin numerals without a '.'.
+
+    Args:
+        text (str): Input text containing Latin numerals.
+
+    Returns:
+        str: Text with Latin numerals followed by '.' replaced by words followed by '-'.
+    """
+    # Mapping of Latin numerals (with '.') to their word equivalents
+    latin_to_words = {
+        '\nI.': ' One -', '\nII.': ' Two -', '\nIII.': ' Three -', '\nIV.': ' Four -',
+        '\nV.': ' Five -', '\nVI.': ' Six -', '\nVII.': ' Seven -', '\nVIII.': ' Eight -',
+        '\nIX.': ' Nine -', '\nX.': ' Ten -'
+    }
+
+    # Replace numerals followed by '.' with their word equivalents
+    for numeral, word in latin_to_words.items():
+        text = text.replace(numeral, word)
+
+    return text
+
+#############################################################################
+
+
 # Path to your EPUB file
 file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
-
-# Reading the EPUB file
 epub_content = read_epub(file_path)
 
 # Print a portion of the EPUB content
 # print(epub_content[8000:10000])  # Print the first 1000 characters
 
+ref = 'ralph' # kate_1_2_much_longer, amanda_leigh2, ralph, rebecca
+chunk_size = 350
+audio_format = 'wav'
+ref_name = get_ref_name(ref) # kate, amanda, ralph
+
+base = '/home/nim'
+book_name = 'The_Dragons_of_Krynn' + f"_by_{ref_name}_{chunk_size}"
+book_path = os.path.join(base, book_name)
+
 
 # List of chapters to find
-chapters = ['The Final Touch', 'Night of Falling Stars', 'Honor Is All', 'Easy Pickings', 'A Dragon to the Core',
+chapters = ['Seven Hymns of the Dragon', 'The Final Touch', 'Night of Falling Stars', 'Honor Is All', 'Easy Pickings', 'A Dragon to the Core',
             'Dragon Breath', "Fool's Gold", 'Scourge of the Wicked Kendragon', 'And Baby Makes Three',
             'The First Dragonarmy Bridging Company', 'The Middle of Nowhere', "Kaz and the Dragon's Children",
             "Into the Light", "The Best", "The Hunt"] # The chapters are with all capitals, thus using .upper() in function
@@ -198,51 +247,32 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 # for chapter, locations in chapter_locations.items():
 #     print(f"'{chapter}' found at positions: {locations}")
 
+chapter_idx = 7 # 8, 3, 0, 15, 4, 1, 5, 6, 7
+chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
 
-chapter_idx = 7
-chapter_info = chapters_dict[chapters[chapter_idx]]
-chapter_start = chapter_info['name_start']
-chapter_end = chapter_info['chapter_end']
-chapter_text = epub_content[chapter_start:chapter_end]
-print(chapter_text)
-text = chapter_text
 
-ref = 'kate_1_2_much_longer' # kate_1_2_much_longer, amanda_leigh2, ralph
-chunk_size = 350
-all_files_folder = '/home/nim/The_Dragons_of_Krynn/' + chapter_info['name'].replace(' ', '_') + f"_{ref}_{chunk_size}_temp"
-os.makedirs(all_files_folder, exist_ok=True)
+chapter_name = chapter_info['name'].replace(' ', '_')
+chapter_folder =  os.path.join(book_path, chapter_name)
+os.makedirs(chapter_folder, exist_ok=True)
 
-# text_chunks = split_text_to_chucnks(text, max_length=chunk_size)
-text_chunks = efficient_split_text_to_chunks(text, max_length=chunk_size)
-text_chunks = [clean_text(chunk) for chunk in text_chunks]
+if chapter_idx == 0:
+    chapter_text = convert_latin_numbers_to_words(chapter_text)
 
+chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
+chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-# tts.tts_to_file(text=chapter_text, speaker_wav="/home/nim/Documents/{ref}}.wav", language="en", file_path="/home/nim/output_dragons_by_much_longer_kate.wav")
-
-# filepath = '/home/nim/TRY.wav'
-# tts.tts_to_file(text=text_chunks[0], speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
-
-
 
 # Process each chunk and generate audio
-for idx, chunk in enumerate(tqdm(text_chunks, desc="Processing chunks")):
-    filepath = os.path.join(all_files_folder, f"output_dragons_by_{ref}_part{idx+1}.wav")
-    #tts.tts_to_file(text=chunk, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path=filepath)
-    # tts.tts_to_file(text=chunk, speaker_wav="/home/nim/Documents/amanda_leigh2.wav", language="en", file_path=filepath)
-    print(chunk)
+for idx, chunk in enumerate(tqdm(chapter_chunks, desc="Processing chunks")):
+    filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
     tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-    # if idx == 11:
-    #     break
 
-
-# Example usage
-audio_format = 'wav'
+# Concat parts to assemble the chapter
 # new_folder_path = f"/home/nim/The_Dragons_of_Krynn/Scourge_of_the_Wicked_Kendragon_{ref}_{chunk_size}_all_files" # Replace with your folder path
-# folder_path = folder # Replace with your folder path
-output_file = "/home/nim/The_Dragons_of_Krynn_temp/" + chapter_info['name'].replace(' ', '_') + f"_{ref}_{chunk_size}.{audio_format}"  # Replace with your output file path
-concat_wavs_in_folder(all_files_folder, output_file, format=audio_format)
+output_file = os.path.join(book_path, chapter_name + f".{audio_format}")  # Replace with your output file path
+concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
 
