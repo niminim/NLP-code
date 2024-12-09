@@ -6,7 +6,6 @@ from pydub import AudioSegment
 import os
 from tqdm import tqdm
 
-
 import torch
 from TTS.api import TTS
 
@@ -28,15 +27,6 @@ def read_epub(file_path):
 
     return '\n'.join(all_text)
 
-
-# Path to your EPUB file
-file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
-
-# Reading the EPUB file
-epub_content = read_epub(file_path)
-
-# Print a portion of the EPUB content
-print(epub_content[8000:10000])  # Print the first 1000 characters
 
 
 # Improved function to find all occurrences of chapters
@@ -95,10 +85,11 @@ def create_chapters_dict(sorted_chapters, epub_content):
     return chapters_dict
 
 
-def split_text_largest_possible(text, max_length):
+def efficient_split_text_to_chunks(text, max_length):
     """
     Splits the text into the largest possible chunks based on the assigned maximum length,
-    ensuring each chunk ends at a sentence boundary.
+    ensuring each chunk ends at a sentence boundary ('.') when possible.
+    If no '.' is found, splits at the nearest whitespace to avoid breaking words.
 
     Args:
         text (str): The input text to split.
@@ -108,23 +99,36 @@ def split_text_largest_possible(text, max_length):
         list: A list of text chunks.
     """
     chunks = []
+    start = 0
 
-    while len(text) > max_length:
-        # Take a substring of max_length
-        snippet = text[:max_length]
+    while start < len(text):
+        # Determine the furthest point for the current chunk
+        end = min(start + max_length, len(text))
 
-        # Find the last "." within the snippet
-        last_dot_index = snippet.rfind(".")
+        # Look for the last '.' within the allowable range
+        last_dot_index = text.rfind(".", start, end)
 
-        # Split at the last "."
-        chunks.append(text[:last_dot_index + 1].strip())
-        text = text[last_dot_index + 1:].strip()
+        if last_dot_index == -1:  # If no '.' is found in the range
+            # Look for the last whitespace within the range
+            last_space_index = text.rfind(" ", start, end)
+            if last_space_index != -1:  # If a space is found, split at the space
+                last_dot_index = last_space_index
+            else:  # If no space is found, split at the max length
+                last_dot_index = end
 
-    # Add the remaining text as the last chunk
-    if text:
-        chunks.append(text)
+        # Add the chunk
+        chunks.append(text[start:last_dot_index].strip())
+        # Update the start to the new position
+        start = last_dot_index + 1
 
-    return chunks
+    return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
+
+def clean_text(chunk):
+    # chunk = re.sub(r'\n+', '\n', chunk)
+    chunk = chunk.replace("\'", "")
+    chunk = chunk.replace("...", "").replace("..", "")
+    return chunk
+
 
 def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     """
@@ -167,11 +171,22 @@ def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     print(f"All WAV files concatenated and saved as '{output_file}'.")
 
 
+# Path to your EPUB file
+file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
+
+# Reading the EPUB file
+epub_content = read_epub(file_path)
+
+# Print a portion of the EPUB content
+# print(epub_content[8000:10000])  # Print the first 1000 characters
+
+
 # List of chapters to find
 chapters = ['The Final Touch', 'Night of Falling Stars', 'Honor Is All', 'Easy Pickings', 'A Dragon to the Core',
             'Dragon Breath', "Fool's Gold", 'Scourge of the Wicked Kendragon', 'And Baby Makes Three',
             'The First Dragonarmy Bridging Company', 'The Middle of Nowhere', "Kaz and the Dragon's Children",
             "Into the Light", "The Best", "The Hunt"] # The chapters are with all capitals, thus using .upper() in function
+
 
 # Find all locations of chapter titles
 chapter_locations = find_chapter_locations(epub_content, chapters)
@@ -194,19 +209,21 @@ text = chapter_text
 
 ref = 'kate_1_2_much_longer' # kate_1_2_much_longer, amanda_leigh2, ralph
 chunk_size = 350
+all_files_folder = '/home/nim/The_Dragons_of_Krynn/' + chapter_info['name'].replace(' ', '_') + f"_{ref}_{chunk_size}_temp"
+os.makedirs(all_files_folder, exist_ok=True)
 
-text_chunks = split_text_largest_possible(text, max_length=chunk_size)
+# text_chunks = split_text_to_chucnks(text, max_length=chunk_size)
+text_chunks = efficient_split_text_to_chunks(text, max_length=chunk_size)
+text_chunks = [clean_text(chunk) for chunk in text_chunks]
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 # tts.tts_to_file(text=chapter_text, speaker_wav="/home/nim/Documents/{ref}}.wav", language="en", file_path="/home/nim/output_dragons_by_much_longer_kate.wav")
 
+# filepath = '/home/nim/TRY.wav'
+# tts.tts_to_file(text=text_chunks[0], speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-text_chunks = split_text_largest_possible(text, max_length=chunk_size)
-
-all_files_folder = '/home/nim/The_Dragons_of_Krynn/' + chapter_info['name'].replace(' ', '_') + f"_{ref}_{chunk_size}_temp"
-os.makedirs(all_files_folder, exist_ok=True)
 
 
 # Process each chunk and generate audio
@@ -214,8 +231,11 @@ for idx, chunk in enumerate(tqdm(text_chunks, desc="Processing chunks")):
     filepath = os.path.join(all_files_folder, f"output_dragons_by_{ref}_part{idx+1}.wav")
     #tts.tts_to_file(text=chunk, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path=filepath)
     # tts.tts_to_file(text=chunk, speaker_wav="/home/nim/Documents/amanda_leigh2.wav", language="en", file_path=filepath)
-    chunk = chunk.replace("\\n", "").replace("\\'", "")
+    print(chunk)
     tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
+
+    # if idx == 11:
+    #     break
 
 
 # Example usage
