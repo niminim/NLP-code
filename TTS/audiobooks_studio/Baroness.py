@@ -124,11 +124,16 @@ def efficient_split_text_to_chunks(text, max_length):
                 last_dot_index = last_space_index
             else:  # If no space is found, split at the max length
                 last_dot_index = end
+        else:
+            # If a period is found, expand the range to include it
+            last_dot_index += 1
 
         # Add the chunk
-        chunks.append(text[start:last_dot_index].strip())
+        chunk = text[start:last_dot_index].strip()
+        chunks.append(chunk)
+
         # Update the start to the new position
-        start = last_dot_index + 1
+        start = last_dot_index
 
     return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
 
@@ -138,18 +143,26 @@ def clean_text(chunk):
     chunk = chunk.replace("...", "").replace("..", "")
     return chunk
 
-def replace_single_newline_with_blank(text):
+def replace_single_newline_with_blank_and_space_after_sequences(text):
     """
     Replaces single occurrences of '\n' with a blank space,
-    leaving sequences of multiple '\n' untouched.
+    and ensures a space follows sequences of multiple '\n'
+    if there is text immediately after them.
 
     Args:
         text (str): The input text.
 
     Returns:
-        str: The modified text with single '\n' replaced by a blank space.
+        str: The modified text with single '\n' replaced by a blank space
+             and spaces added after sequences of '\n' where needed.
     """
-    return re.sub(r'(?<!\n)\n(?!\n)', ' ', text) # Matches a \n that is not preceded by another \n ((?<!\n) ensures this).
+    # Replace single \n with a space
+    text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+
+    # Ensure a space follows sequences of \n if text follows
+    text = re.sub(r'(\n{2,})(\S)', r'\1 \2', text)
+
+    return text
 
 
 def add_newline_after_chapter_name(text, chapter_name):
@@ -262,7 +275,7 @@ book_path = os.path.join(base, book_name)
 
 # List of chapters to find
 chapters = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
-            'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'wenty-two', 'Twenty-three',
+            'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three',
             'Twenty-four', 'Twenty-seven', 'Twenty-six', 'Twenty-seven','Twenty-eight', 'Twenty-nine', 'Thirty', 'Thirty-one','Epilogue']
 
 
@@ -277,46 +290,25 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 #     print(f"'{chapter}' found at positions: {locations}")
 
 
-chunk1 = epub_content[0:500]
-chunk2 = epub_content[500:1000]
-chunk3 = epub_content[1000:1500]
-chunk4 = epub_content[1500:2000]
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-filepath1 = os.path.join(book_path, "file1.wav")
-filepath2 = os.path.join(book_path, "file2.wav")
-filepath3 = os.path.join(book_path, "file3.wav")
-filepath4 = os.path.join(book_path, "file4.wav")
-
-tts.tts_to_file(text=chunk1, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath1)
-tts.tts_to_file(text=chunk2, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath2)
-tts.tts_to_file(text=chunk3, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath3)
-tts.tts_to_file(text=chunk4, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath4)
-
-
-for chapter_idx in [5,1,5,6]:
-# for chapter_idx in [15]:
-    # chapter_idx = 15 # 8, 2, 3, 0, 15, 4, 1, 5, 6, 7, 9, 10 ,11, 12, 13
+for chapter_idx in [10]:
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
-
-
 
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
     chapter_folder =  os.path.join(book_path, chapter_name_adj)
     os.makedirs(chapter_folder, exist_ok=True)
 
-    if chapter_idx == 0:
-        chapter_text = convert_latin_numbers_to_words(chapter_text)
-
 
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks = [replace_single_newline_with_blank(chunk) for chunk in chapter_chunks]
-    chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
+    chapter_chunks = [replace_single_newline_with_blank_and_space_after_sequences(chunk) for chunk in chapter_chunks]
+    # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
 
+    if chapter_idx != 0 and chapter_idx != len(chapters)-1:
+        chapter_chunks[0] = 'Chapter ' + chapter_chunks[0]
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
@@ -329,7 +321,6 @@ for chapter_idx in [5,1,5,6]:
 
         # if idx == 8:
         #     break
-
 
     # Concat parts to assemble the chapter
     output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path

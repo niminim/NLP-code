@@ -125,32 +125,46 @@ def efficient_split_text_to_chunks(text, max_length):
                 last_dot_index = last_space_index
             else:  # If no space is found, split at the max length
                 last_dot_index = end
+        else:
+            # If a period is found, expand the range to include it
+            last_dot_index += 1
 
         # Add the chunk
-        chunks.append(text[start:last_dot_index].strip())
+        chunk = text[start:last_dot_index].strip()
+        chunks.append(chunk)
+
         # Update the start to the new position
-        start = last_dot_index + 1
+        start = last_dot_index
 
     return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
-
 
 def clean_text(chunk):
     chunk = chunk.replace("\\'", "'")
     chunk = chunk.replace("...", "").replace("..", "")
     return chunk
 
-def replace_single_newline_with_blank(text):
+
+def replace_single_newline_with_blank_and_space_after_sequences(text):
     """
     Replaces single occurrences of '\n' with a blank space,
-    leaving sequences of multiple '\n' untouched.
+    and ensures a space follows sequences of multiple '\n'
+    if there is text immediately after them.
 
     Args:
         text (str): The input text.
 
     Returns:
-        str: The modified text with single '\n' replaced by a blank space.
+        str: The modified text with single '\n' replaced by a blank space
+             and spaces added after sequences of '\n' where needed.
     """
-    return re.sub(r'(?<!\n)\n(?!\n)', ' ', text) # Matches a \n that is not preceded by another \n ((?<!\n) ensures this).
+    # Replace single \n with a space
+    text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+
+    # Ensure a space follows sequences of \n if text follows
+    text = re.sub(r'(\n{2,})(\S)', r'\1 \2', text)
+
+    return text
+
 
 
 def add_newline_after_chapter_name(text, chapter_name):
@@ -278,7 +292,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 # for chapter, locations in chapter_locations.items():
 #     print(f"'{chapter}' found at positions: {locations}")
 
-for chapter_idx in [6]:
+for chapter_idx in [8]:
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
@@ -292,7 +306,7 @@ for chapter_idx in [6]:
 
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks = [replace_single_newline_with_blank(chunk) for chunk in chapter_chunks]
+    chapter_chunks = [replace_single_newline_with_blank_and_space_after_sequences(chunk) for chunk in chapter_chunks]
     chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
 
 
@@ -307,7 +321,6 @@ for chapter_idx in [6]:
 
         # if idx == 8:
         #     break
-
 
     # Concat parts to assemble the chapter
     output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
