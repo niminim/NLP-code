@@ -125,18 +125,14 @@ def efficient_split_text_to_chunks(text, max_length):
                 last_dot_index = last_space_index
             else:  # If no space is found, split at the max length
                 last_dot_index = end
-        else:
-            # If a period is found, expand the range to include it
-            last_dot_index += 1
 
         # Add the chunk
-        chunk = text[start:last_dot_index].strip()
-        chunks.append(chunk)
-
+        chunks.append(text[start:last_dot_index].strip())
         # Update the start to the new position
-        start = last_dot_index
+        start = last_dot_index + 1
 
     return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
+
 
 def clean_text(chunk):
     chunk = chunk.replace("\\'", "'")
@@ -144,27 +140,37 @@ def clean_text(chunk):
     return chunk
 
 
-def replace_single_newline_with_blank_and_space_after_sequences(text):
+# def process_newlines(text):
+#     """
+#     Replaces sequences of multiple '\n' with ' \n ' (a space, a newline, and another space),
+#     and ensures single '\n' is surrounded by exactly one space, but avoids adding redundant spaces.
+#
+#     Args:
+#         text (str): The input text.
+#
+#     Returns:
+#         str: The modified text with '\n' properly normalized.
+#     """
+#     # Replace multiple \n with ' \n '
+#     text = re.sub(r'\n{2,}', ' \n ', text)
+#
+#     # Ensure a single \n is surrounded by a single space, avoiding duplicate spaces
+#     text = re.sub(r' ?\n ?', ' \n ', text)
+#
+#     return text
+
+def process_newlines(text):
     """
-    Replaces single occurrences of '\n' with a blank space,
-    and ensures a space follows sequences of multiple '\n'
-    if there is text immediately after them.
+    Replaces any occurrence of '\n' (single or multiple) with a single space.
 
     Args:
         text (str): The input text.
 
     Returns:
-        str: The modified text with single '\n' replaced by a blank space
-             and spaces added after sequences of '\n' where needed.
+        str: The modified text with all '\n' sequences replaced by a single space.
     """
-    # Replace single \n with a space
-    text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
-
-    # Ensure a space follows sequences of \n if text follows
-    text = re.sub(r'(\n{2,})(\S)', r'\1 \2', text)
-
-    return text
-
+    # Replace any sequence of \n (one or more) with a single space
+    return re.sub(r'\n+', ' ', text)
 
 
 def add_newline_after_chapter_name(text, chapter_name):
@@ -292,7 +298,10 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 # for chapter, locations in chapter_locations.items():
 #     print(f"'{chapter}' found at positions: {locations}")
 
+
+# for chapter_idx in [1,2,3,4,5,6,7,10,11,12,13,14]:
 for chapter_idx in [8]:
+
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
@@ -303,10 +312,9 @@ for chapter_idx in [8]:
     if chapter_idx == 0:
         chapter_text = convert_latin_numbers_to_words(chapter_text)
 
-
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks = [replace_single_newline_with_blank_and_space_after_sequences(chunk) for chunk in chapter_chunks]
+    chapter_chunks[1:] = [process_newlines(chunk) for chunk in chapter_chunks[1:]] # we need the first
     chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
 
 
@@ -319,11 +327,17 @@ for chapter_idx in [8]:
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        # if idx == 8:
-        #     break
+        if idx == 10:
+            break
 
     # Concat parts to assemble the chapter
     output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
+
+
+
+
+
+
 
 

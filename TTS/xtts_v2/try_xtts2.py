@@ -15,13 +15,15 @@ print(sys.path)
 
 
 
-# Get device
-device = "cuda" if torch.cuda.is_available() else "cpu"
-# device = "cpu"
+
 
 # List available 🐸TTS models
 print(TTS().list_models())
 
+
+# Get device
+device = "cuda" if torch.cuda.is_available() else "cpu"
+# device = "cpu"
 # Init TTS
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
@@ -39,3 +41,10 @@ tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/kate_1_2_much_longer
 # tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/michael_1_long.wav", language="en", file_path="/home/nim/output_last_metal_by_michael.wav")
 
 tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/rebecca.wav", language="en", file_path="/home/nim/output_pumpkim_by_rebecca.wav")
+
+
+tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.wav", language="en", file_path="/home/nim/output_tress_by_much_longer_kate_TRY.wav")
+# tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/michael_1_long.wav", language="en", file_path="/home/nim/output_last_metal_by_michael.wav")
+
+text = '" He turned toward his workroom, the precious dragon scale imprisoned between gnarled thumb and forefinger. "Get to work, Kharian. Now." Mapshaker\'s eyes were closed. He felt much cooler than he had a few minutes ago. Wind tickled his ears and soothed the fire streaking throughout his body. He relaxed'
+tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/ralph.wav", language="en", file_path="/home/nim/TRY.wav")

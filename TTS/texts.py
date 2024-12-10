@@ -204,3 +204,6 @@ Someone inside the van turned down the music. "Cody! Call me after you settle in
 
 "I can’t believe it!" Jenna moved closer to Max and whispered. "That’s Cody Walker! There are rumors about him at school that stretch all the way to Canada!"
 """
+
+
+text = '" He turned toward his workroom, the precious dragon scale imprisoned between gnarled thumb and forefinger. "Get to work, Kharian. Now." \n Mapshaker\'s eyes were closed. He felt much cooler than he had a few minutes ago. Wind tickled his ears and soothed the fire streaking throughout his body. He relaxed'

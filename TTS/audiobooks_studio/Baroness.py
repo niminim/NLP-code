@@ -124,16 +124,11 @@ def efficient_split_text_to_chunks(text, max_length):
                 last_dot_index = last_space_index
             else:  # If no space is found, split at the max length
                 last_dot_index = end
-        else:
-            # If a period is found, expand the range to include it
-            last_dot_index += 1
 
         # Add the chunk
-        chunk = text[start:last_dot_index].strip()
-        chunks.append(chunk)
-
+        chunks.append(text[start:last_dot_index].strip())
         # Update the start to the new position
-        start = last_dot_index
+        start = last_dot_index + 1
 
     return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
 
@@ -143,26 +138,18 @@ def clean_text(chunk):
     chunk = chunk.replace("...", "").replace("..", "")
     return chunk
 
-def replace_single_newline_with_blank_and_space_after_sequences(text):
+def process_newlines(text):
     """
-    Replaces single occurrences of '\n' with a blank space,
-    and ensures a space follows sequences of multiple '\n'
-    if there is text immediately after them.
+    Replaces any occurrence of '\n' (single or multiple) with a single space.
 
     Args:
         text (str): The input text.
 
     Returns:
-        str: The modified text with single '\n' replaced by a blank space
-             and spaces added after sequences of '\n' where needed.
+        str: The modified text with all '\n' sequences replaced by a single space.
     """
-    # Replace single \n with a space
-    text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
-
-    # Ensure a space follows sequences of \n if text follows
-    text = re.sub(r'(\n{2,})(\S)', r'\1 \2', text)
-
-    return text
+    # Replace any sequence of \n (one or more) with a single space
+    return re.sub(r'\n+', ' ', text)
 
 
 def add_newline_after_chapter_name(text, chapter_name):
@@ -293,7 +280,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [10]:
+for chapter_idx in [32]:
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
@@ -304,11 +291,11 @@ for chapter_idx in [10]:
 
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks = [replace_single_newline_with_blank_and_space_after_sequences(chunk) for chunk in chapter_chunks]
+    chapter_chunks = [process_newlines(chunk) for chunk in chapter_chunks]
     # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
 
     if chapter_idx != 0 and chapter_idx != len(chapters)-1:
-        chapter_chunks[0] = 'Chapter ' + chapter_chunks[0]
+        chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
