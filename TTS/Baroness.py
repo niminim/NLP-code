@@ -29,7 +29,6 @@ def read_epub(file_path):
     return '\n'.join(all_text)
 
 
-
 # Improved function to find all occurrences of chapters
 def find_chapter_locations(text, chapters):
     results = {}
@@ -244,7 +243,7 @@ def convert_latin_numbers_to_words(text):
 
 
 # Path to your EPUB file
-file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
+file_path = '/home/nim/Downloads/Baroness_of_Blood.epub'
 epub_content = read_epub(file_path)
 
 
@@ -257,15 +256,14 @@ audio_format = 'wav'
 ref_name = get_ref_name(ref) # kate, amanda, ralph
 
 base = '/home/nim'
-book_name = 'The_Dragons_of_Krynn_NEW' + f"_by_{ref_name}_{chunk_size}"
+book_name = 'Baroness_of_Blood' + f"_by_{ref_name}_{chunk_size}"
 book_path = os.path.join(base, book_name)
 
 
 # List of chapters to find
-chapters = ['Seven Hymns of the Dragon', 'The Final Touch', 'Night of Falling Stars', 'Honor Is All', 'Easy Pickings', 'A Dragon to the Core',
-            'Dragon Breath', "Fool's Gold", 'Scourge of the Wicked Kendragon', 'And Baby Makes Three',
-            'The First Dragonarmy Bridging Company', 'The Middle of Nowhere', "Kaz and the Dragon's Children",
-            "Into the Light", "The Best", "The Hunt"]
+chapters = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
+            'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'wenty-two', 'Twenty-three',
+            'Twenty-four', 'Twenty-seven', 'Twenty-six', 'Twenty-seven','Twenty-eight', 'Twenty-nine', 'Thirty', 'Thirty-one','Epilogue']
 
 
 # Find all locations of chapter titles
@@ -278,8 +276,32 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 # for chapter, locations in chapter_locations.items():
 #     print(f"'{chapter}' found at positions: {locations}")
 
-for chapter_idx in [6]:
+
+chunk1 = epub_content[0:500]
+chunk2 = epub_content[500:1000]
+chunk3 = epub_content[1000:1500]
+chunk4 = epub_content[1500:2000]
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+
+filepath1 = os.path.join(book_path, "file1.wav")
+filepath2 = os.path.join(book_path, "file2.wav")
+filepath3 = os.path.join(book_path, "file3.wav")
+filepath4 = os.path.join(book_path, "file4.wav")
+
+tts.tts_to_file(text=chunk1, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath1)
+tts.tts_to_file(text=chunk2, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath2)
+tts.tts_to_file(text=chunk3, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath3)
+tts.tts_to_file(text=chunk4, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath4)
+
+
+for chapter_idx in [5,1,5,6]:
+# for chapter_idx in [15]:
+    # chapter_idx = 15 # 8, 2, 3, 0, 15, 4, 1, 5, 6, 7, 9, 10 ,11, 12, 13
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
+
+
 
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
