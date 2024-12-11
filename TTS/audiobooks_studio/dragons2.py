@@ -306,7 +306,7 @@ audio_format = 'wav'
 ref_name = get_ref_name(ref) # kate, amanda, ralph
 
 base = '/home/nim'
-book_name = 'The_Dragons_of_Krynn_NEW' + f"_by_{ref_name}_{chunk_size}"
+book_name = 'The_Dragons_of_Krynn_NEW2' + f"_by_{ref_name}_{chunk_size}"
 book_path = os.path.join(base, book_name)
 
 
@@ -357,10 +357,10 @@ for chapter_idx in [8]:
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        # if idx == 38:
-        #     break
+        if idx == 40:
+            break
 
-    # Concat parts to assemble the chapter
+    # # Concat parts to assemble the chapter
     output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 

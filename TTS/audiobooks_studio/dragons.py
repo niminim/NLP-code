@@ -166,14 +166,38 @@ def replace_newline_sequences(input_text):
     return re.sub(r'\n{3,}', '  ', input_text)
 
 
-def clean_newline(input_text):
-    # Replace all single newline characters with a space
-    text = input_text.replace("\n", " ")
+def process_chunk_add_new_section(chunk):
+    """
+    Cleans a single text chunk by applying specific transformations.
+    - Example: Replace sequences of 4+ newlines with 'New section - '.
+    """
+    return re.sub(r'\n{4,}', ' New section - ', chunk)
 
-    # Replace patterns of 10 or more newline characters followed by any character with a single space
-    text = re.sub(r'\n{10,}.', '  ', text)
+def process_chunk_replace_quotes_newline(input_text):
+    """
+    Replaces instances of '"' followed by '\n' followed by '"' with a single space.
 
-    return text
+    Args:
+        input_text (str): The input text.
+
+    Returns:
+        str: The text with the pattern replaced by a single space.
+    """
+    return re.sub(r'"\n"', '" "', input_text)
+
+def replace_newline_after_quote(input_text):
+    """
+    Replaces instances of '"\n' followed by a capital letter with '" '
+    and retains the capital letter.
+
+    Args:
+        input_text (str): The input text.
+
+    Returns:
+        str: The text with the pattern replaced.
+    """
+    return re.sub(r'"\n([A-Z])', r'" \1', input_text)
+
 
 
 # def process_newlines(text): # this was used and worked
@@ -230,11 +254,9 @@ def keep_n_sequences(input_text, n=2):
     # Modify the text from the nth sequence onward
     # Here, we apply `clean_newline` to the portion after the nth sequence
     chunk_to_modify = processed_text[end_position_of_nth_sequence:]
-    modified_chunk = ''.join([clean_newline(chunk) for chunk in chunk_to_modify])
+    modified_chunk = ''.join([process_chunk_replace_quotes_newline(chunk) for chunk in chunk_to_modify])
     final_text = processed_text[:end_position_of_nth_sequence] + modified_chunk
 
-    print("Final Processed Text:")
-    print(final_text)
     return final_text
 
 def add_newline_after_chapter_name(text, chapter_name):
@@ -379,15 +401,17 @@ for chapter_idx in [8]:
         chapter_text = convert_latin_numbers_to_words(chapter_text)
 
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
-    chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks[1:] = [replace_newline_sequences(chunk) for chunk in chapter_chunks[1:]]
-    chapter_chunks[1:] = [clean_newline(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks[1:] = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks[1:] = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
+
+
+    # chapter_chunks[1:] = [replace_newline_sequences(chunk) for chunk in chapter_chunks[1:]]
+    # chapter_chunks[1:] = [clean_newline(chunk) for chunk in chapter_chunks[1:]]
 
     # Deal with the header
     chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=2)
-
     # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
-
 
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -399,19 +423,11 @@ for chapter_idx in [8]:
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        if idx == 38:
-            break
+        # if idx == 38:
+        #     break
 
     # # Concat parts to assemble the chapter
-    # output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
-    # concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
-
-
-
-
-input_text= 'Scourge of the Wicked Kendragon\nJanet Pack\n\n\n\n\n\n\n"But I was only… aaahhhh!"\nPropelled'
-input_text= 'Scourge of the Wicked \nJanet Nill\n\n\n\n\n\n\n"But I was only… aaahhhh!"\nPropelled'
-
-
+    output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
+    concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
 
