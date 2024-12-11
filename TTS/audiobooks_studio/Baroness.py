@@ -151,6 +151,36 @@ def process_newlines(text):
     # Replace any sequence of \n (one or more) with a single space
     return re.sub(r'\n+', ' ', text)
 
+def ensure_space_around_few_newlines(text):
+    """
+    Ensures exactly one space before and after single or double newline characters (\n or \n\n).
+    Does not add additional spaces if already present.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with spaces around newlines.
+    """
+    # Add a space before and after \n or \n\n only if needed
+    text = re.sub(r'(?<!\S)(\n{1,2})(?!\S)', r' \1 ', text)  # Add spaces if missing
+    text = re.sub(r' +(\n{1,2}) +', r' \1 ', text)  # Normalize spaces around \n
+    return text
+
+def ensure_space_around_multiple_newlines(text):
+    """
+    Ensures exactly one space before and after sequences of three or more newline characters (\n\n\n or more).
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with spaces around sequences of three or more newlines.
+    """
+    # Ensure spaces around sequences of three or more \n
+    text = re.sub(r'(?<!\S)(\n{3,})(?!\S)', r' \1 ', text)  # Add spaces if missing
+    text = re.sub(r' +(\n{3,}) +', r' \1 ', text)  # Normalize spaces around \n
+    return text
 
 def add_newline_after_chapter_name(text, chapter_name):
     """
@@ -292,7 +322,7 @@ for chapter_idx in [32]:
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
     chapter_chunks = [process_newlines(chunk) for chunk in chapter_chunks]
-    # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
+    chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
 
     if chapter_idx != 0 and chapter_idx != len(chapters)-1:
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added

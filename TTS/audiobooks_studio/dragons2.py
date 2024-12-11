@@ -95,12 +95,12 @@ def get_chapter_text(chapters, chapter_idx):
     return chapter_text, chapter_info
 
 
-
-def efficient_split_text_to_chunks(text, max_length): # this was used and worked
+def split_text_to_chunks(text, max_length):
     """
-    Splits the text into the largest possible chunks based on the assigned maximum length,
-    ensuring each chunk ends at a sentence boundary ('.') when possible.
-    If no '.' is found, splits at the nearest whitespace to avoid breaking words.
+    Splits text into chunks based on the assigned maximum length, prioritizing:
+    1. Sequences of 3 or more newlines (\n\n\n).
+    2. The largest part that ends with a '.' (capped by max_length).
+    3. The largest part ending with whitespace (capped by max_length).
 
     Args:
         text (str): The input text to split.
@@ -111,29 +111,32 @@ def efficient_split_text_to_chunks(text, max_length): # this was used and worked
     """
     chunks = []
     start = 0
+    newline_pattern = re.compile(r'\n{3,}')  # Match sequences of 3+ newlines
 
     while start < len(text):
-        # Determine the furthest point for the current chunk
         end = min(start + max_length, len(text))
 
-        # Look for the last '.' within the allowable range
-        last_dot_index = text.rfind(".", start, end)
+        # Find the first match of 3+ newlines in the range
+        newline_match = newline_pattern.search(text, start, end)
 
-        if last_dot_index == -1:  # If no '.' is found in the range
-            # Look for the last whitespace within the range
-            last_space_index = text.rfind(" ", start, end)
-            if last_space_index != -1:  # If a space is found, split at the space
-                last_dot_index = last_space_index
-            else:  # If no space is found, split at the max length
-                last_dot_index = end
+        if newline_match:
+            # Split at the newline sequence
+            boundary = newline_match.start()
+        else:
+            # Find the largest part that ends with '.'
+            last_period = text.rfind('.', start, end)
+            if last_period != -1:
+                boundary = last_period + 1  # Include the period
+            else:
+                # Fallback to the largest part ending with whitespace
+                last_whitespace = text.rfind(' ', start, end)
+                boundary = last_whitespace if last_whitespace != -1 else end
 
         # Add the chunk
-        chunks.append(text[start:last_dot_index].strip())
-        # Update the start to the new position
-        start = last_dot_index + 1
+        chunks.append(text[start:boundary].strip())
+        start = boundary  # Update start for the next chunk
 
-    return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
-
+    return chunks
 
 
 def clean_text(chunk):
@@ -142,100 +145,47 @@ def clean_text(chunk):
     return chunk
 
 
-# def process_newlines(text):
-#     """
-#     Replaces sequences of multiple '\n' with ' \n ' (a space, a newline, and another space),
-#     and ensures single '\n' is surrounded by exactly one space, but avoids adding redundant spaces.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with '\n' properly normalized.
-#     """
-#     # Replace multiple \n with ' \n '
-#     text = re.sub(r'\n{2,}', ' \n ', text)
-#
-#     # Ensure a single \n is surrounded by a single space, avoiding duplicate spaces
-#     text = re.sub(r' ?\n ?', ' \n ', text)
-#
-#     return text
-
-def replace_newline_sequences(input_text):
-    # Replace 3 or more newline characters with "  An ornamental break  ."
-    return re.sub(r'\n{3,}', '  ', input_text)
-
-
-def clean_newline(input_text):
-    # Replace all single newline characters with a space
-    text = input_text.replace("\n", " ")
-
-    # Replace patterns of 10 or more newline characters followed by any character with a single space
-    text = re.sub(r'\n{10,}.', '  ', text)
-
-    return text
-
-
-# def process_newlines(text): # this was used and worked
-#     """
-#     Replaces any occurrence of '\n' (single or multiple) with a single space.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with all '\n' sequences replaced by a single space.
-#     """
-#     # Replace any sequence of \n (one or more) with a single space
-#     return re.sub(r'\n+', ' ', text)
-
-
-def keep_n_sequences_with_position(input_text, n):
+def split_text_to_chunks(text, max_length):
     """
-    Keeps the first n newline sequences intact, replaces the rest with spaces,
-    and returns the ending position of the nth sequence.
+    Splits text into the largest possible chunks based on the assigned maximum length,
+    ensuring each chunk ends at the shortest valid boundary:
+    - A sentence boundary ('.')
+    - A sequence of 3 or more newlines (e.g., \n\n\n).
+    If neither is found, splits at the nearest whitespace.
 
-    Parameters:
-    - input_text (str): The input text to process.
-    - n (int): The number of newline sequences to retain.
+    Args:
+        text (str): The input text to split.
+        max_length (int): The maximum length of each chunk.
 
     Returns:
-    - tuple: (processed_text, end_position_of_nth_sequence)
+        list: A list of text chunks.
     """
-    # Split the input text into sequences based on newlines
-    sequences = re.split(r'(\n+)', input_text)
+    chunks = []
+    start = 0
+    # Match '.' or sequences of 3+ \n
+    pattern = re.compile(r'\.|(?<=\n)\n{2,}')
 
-    # Calculate the indices to retain
-    retain_indices = 2 * n - 1  # Each sequence has a preceding text and newline part
+    while start < len(text):
+        # Determine the maximum range for the current chunk
+        end = min(start + max_length, len(text))
 
-    # Join retained parts
-    retained_part = ''.join(sequences[:retain_indices + 1])
+        # Find all matches for boundaries within the range
+        matches = list(pattern.finditer(text, start, end))
 
-    # Replace the rest with spaces
-    replaced_part = ''.join(sequences[retain_indices + 1:]).replace('\n', ' ')
+        if matches:
+            # Find the closest valid boundary within the range
+            boundary = min(match.end() - 1 for match in matches if match.end() - 1 <= end)
+        else:
+            # Fallback: Find the last whitespace within the range
+            boundary = text.rfind(' ', start, end)
+            if boundary == -1:  # If no whitespace is found, split at max length
+                boundary = end
 
-    # Combine both parts
-    processed_text = retained_part + replaced_part
+        # Add the chunk
+        chunks.append(text[start:boundary].strip())
+        start = boundary + 1  # Move to the next position after the boundary
 
-    # Calculate the ending position of the nth newline sequence
-    nth_sequence_text = ''.join(sequences[:retain_indices + 1])
-    end_position_of_nth_sequence = len(nth_sequence_text)
-
-    return processed_text, end_position_of_nth_sequence
-
-
-def keep_n_sequences(input_text, n=2):
-    processed_text, end_position_of_nth_sequence = keep_n_sequences_with_position(input_text, n=2)
-
-    # Modify the text from the nth sequence onward
-    # Here, we apply `clean_newline` to the portion after the nth sequence
-    chunk_to_modify = processed_text[end_position_of_nth_sequence:]
-    modified_chunk = ''.join([clean_newline(chunk) for chunk in chunk_to_modify])
-    final_text = processed_text[:end_position_of_nth_sequence] + modified_chunk
-
-    print("Final Processed Text:")
-    print(final_text)
-    return final_text
+    return [chunk for chunk in chunks if chunk]  # Remove empty chunks
 
 def add_newline_after_chapter_name(text, chapter_name):
     """
@@ -259,6 +209,20 @@ def get_ref_name(ref):
 
     return refs[ref]
 
+def replace_seven_or_more_newlines(text):
+    """
+    Replaces sequences of seven or more newline characters (\n\n\n\n\n\n\n or more)
+    with " \n Pause here \n ".
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with sequences of 7+ newlines replaced.
+    """
+    # Replace sequences of 7 or more \n with " \n Pause here \n "
+    text = re.sub(r'\n{7,}', ' Pause here ', text)
+    return text
 
 def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     """
@@ -378,16 +342,10 @@ for chapter_idx in [8]:
     if chapter_idx == 0:
         chapter_text = convert_latin_numbers_to_words(chapter_text)
 
-    chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
+    chapter_chunks = split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks[1:] = [replace_newline_sequences(chunk) for chunk in chapter_chunks[1:]]
-    chapter_chunks[1:] = [clean_newline(chunk) for chunk in chapter_chunks[1:]]
-
-    # Deal with the header
-    chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=2)
-
+    # chapter_chunks = [split_text_to_chunks(chunk) for chunk in chapter_chunks] # we need the first
     # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
-
 
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -399,18 +357,16 @@ for chapter_idx in [8]:
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        if idx == 38:
-            break
+        # if idx == 38:
+        #     break
 
-    # # Concat parts to assemble the chapter
-    # output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
-    # concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
-
-
+    # Concat parts to assemble the chapter
+    output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
+    concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
 
-input_text= 'Scourge of the Wicked Kendragon\nJanet Pack\n\n\n\n\n\n\n"But I was only… aaahhhh!"\nPropelled'
-input_text= 'Scourge of the Wicked \nJanet Nill\n\n\n\n\n\n\n"But I was only… aaahhhh!"\nPropelled'
+
+
 
 
 
