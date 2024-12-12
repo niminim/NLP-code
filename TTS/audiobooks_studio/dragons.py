@@ -65,9 +65,16 @@ def filter_non_beginnings(chapter_locations):
 
 # Sort chapters by their starting position
 def sort_chapters_by_position(chapter_locations):
-    # Convert dictionary to a list of tuples and sort by the starting position (first element of the tuple)
-    sorted_chapters = sorted(chapter_locations.items(), key=lambda x: x[1][0])
-    return sorted_chapters
+    """
+    Sorts a list of chapter occurrences by their starting positions.
+
+    Args:
+        chapter_locations (list): A list of tuples in the form [('Chapter Name', (start, end)), ...].
+
+    Returns:
+        list: A sorted list of tuples by the starting position.
+    """
+    return sorted(chapter_locations, key=lambda x: x[1][0])
 
 
 def create_chapters_dict(sorted_chapters, epub_content):
@@ -92,18 +99,20 @@ def create_chapters_dict(sorted_chapters, epub_content):
 
     return chapters_dict
 
+
 def find_chapter_locations2(text, chapters):
     """
-    Finds all occurrences of chapter titles in the text where the chapter name is the only content in the line.
+    Finds all occurrences of chapter titles in the text where the chapter name is the only content in the line,
+    and returns results as a list of tuples in the format: [('Chapter Name', (start, end))].
 
     Args:
         text (str): The input text to search.
         chapters (list of str): A list of chapter titles to look for.
 
     Returns:
-        dict: A dictionary where keys are chapter titles and values are lists of (start, end) positions.
+        list: A list of tuples where each tuple contains the chapter title and its (start, end) positions.
     """
-    results = {}
+    results = []
 
     for chapter in chapters:
         # Match chapter titles that appear as the only content on the line
@@ -112,13 +121,14 @@ def find_chapter_locations2(text, chapters):
         # Find all matches with start and end positions
         matches = [(match.start(), match.end()) for match in re.finditer(pattern, text, re.MULTILINE)]
 
-        # Store the results for each chapter
-        results[chapter] = matches
+        # Add chapter name and its positions to the results
+        for start, end in matches:
+            results.append((chapter, (start, end)))
 
     return results
 
 
-def get_chapter_text(chapters, chapter_idx):
+def get_chapter_text(chapters_dict, chapters, chapter_idx):
     # the function gets the chapters list and the chapter idx and return the corresponding text
     chapter_info = chapters_dict[chapters[chapter_idx]]
     chapter_start = chapter_info['name_start']
@@ -455,12 +465,9 @@ chapters = ['Seven Hymns of the Dragon', 'The Final Touch', 'Night of Falling St
 
 
 # Find all locations of chapter titles
-chapter_locations = find_chapter_locations(epub_content, chapters)
-chapter_locations = filter_non_beginnings(chapter_locations)
+chapter_locations = find_chapter_locations2(epub_content, chapters)
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
-
-chapters_dict = find_chapter_locations2(epub_content, chapters) # Use only this to find in one line (matters to baroness)
 
 
 # # Print the chapter locations
@@ -475,7 +482,7 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 # for chapter_idx in [1,2,3,4,5,6,7,10,11,12,13,14]:
 for chapter_idx in [8]:
 
-    chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
+    chapter_text, chapter_info = get_chapter_text(chapters_dict, chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')

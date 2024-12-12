@@ -62,9 +62,16 @@ def filter_non_beginnings(chapter_locations):
 
 # Sort chapters by their starting position
 def sort_chapters_by_position(chapter_locations):
-    # Convert dictionary to a list of tuples and sort by the starting position (first element of the tuple)
-    sorted_chapters = sorted(chapter_locations.items(), key=lambda x: x[1][0])
-    return sorted_chapters
+    """
+    Sorts a list of chapter occurrences by their starting positions.
+
+    Args:
+        chapter_locations (list): A list of tuples in the form [('Chapter Name', (start, end)), ...].
+
+    Returns:
+        list: A sorted list of tuples by the starting position.
+    """
+    return sorted(chapter_locations, key=lambda x: x[1][0])
 
 
 def create_chapters_dict(sorted_chapters, epub_content):
@@ -91,16 +98,17 @@ def create_chapters_dict(sorted_chapters, epub_content):
 
 def find_chapter_locations2(text, chapters):
     """
-    Finds all occurrences of chapter titles in the text where the chapter name is the only content in the line.
+    Finds all occurrences of chapter titles in the text where the chapter name is the only content in the line,
+    and returns results as a list of tuples in the format: [('Chapter Name', (start, end))].
 
     Args:
         text (str): The input text to search.
         chapters (list of str): A list of chapter titles to look for.
 
     Returns:
-        dict: A dictionary where keys are chapter titles and values are lists of (start, end) positions.
+        list: A list of tuples where each tuple contains the chapter title and its (start, end) positions.
     """
-    results = {}
+    results = []
 
     for chapter in chapters:
         # Match chapter titles that appear as the only content on the line
@@ -109,13 +117,14 @@ def find_chapter_locations2(text, chapters):
         # Find all matches with start and end positions
         matches = [(match.start(), match.end()) for match in re.finditer(pattern, text, re.MULTILINE)]
 
-        # Store the results for each chapter
-        results[chapter] = matches
+        # Add chapter name and its positions to the results
+        for start, end in matches:
+            results.append((chapter, (start, end)))
 
     return results
 
 
-def get_chapter_text(chapters, chapter_idx):
+def get_chapter_text(chapters_dict, chapters, chapter_idx):
     # the function gets the chapters list and the chapter idx and return the corresponding text
     chapter_info = chapters_dict[chapters[chapter_idx]]
     chapter_start = chapter_info['name_start']
@@ -229,40 +238,6 @@ def replace_newline_after_quote(input_text):
     """
     return re.sub(r'"\n([A-Z])', r'" \1', input_text)
 
-
-
-# def process_newlines(text): # this was used and worked
-#     """
-#     Replaces any occurrence of '\n' (single or multiple) with a single space.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with all '\n' sequences replaced by a single space.
-#     """
-#     # Replace any sequence of \n (one or more) with a single space
-#     return re.sub(r'\n+', ' ', text)
-
-
-# def process_newlines(text):
-#     """
-#     Replaces sequences of multiple '\n' with ' \n ' (a space, a newline, and another space),
-#     and ensures single '\n' is surrounded by exactly one space, but avoids adding redundant spaces.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with '\n' properly normalized.
-#     """
-#     # Replace multiple \n with ' \n '
-#     text = re.sub(r'\n{2,}', ' \n ', text)
-#
-#     # Ensure a single \n is surrounded by a single space, avoiding duplicate spaces
-#     text = re.sub(r' ?\n ?', ' \n ', text)
-#
-#     return text
 
 ######## End of Clean text
 
@@ -446,12 +421,12 @@ book_path = os.path.join(base, book_name)
 # List of chapters to find
 chapters = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
             'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three',
-            'Twenty-four', 'Twenty-seven', 'Twenty-six', 'Twenty-seven','Twenty-eight', 'Twenty-nine', 'Thirty', 'Thirty-one','Epilogue']
+            'Twenty-four', 'Twenty-five', 'Twenty-six', 'Twenty-seven','Twenty-eight', 'Twenty-nine', 'Thirty', 'Thirty-one','Epilogue',
+            'About the Author', 'Part IThe Legacy'] # Parts appears at the end! only used as a stop point
 
 
 # Find all locations of chapter titles
-chapter_locations = find_chapter_locations(epub_content, chapters)
-chapter_locations = filter_non_beginnings(chapter_locations)
+chapter_locations = find_chapter_locations2(epub_content, chapters)
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
@@ -465,8 +440,8 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [14,15,16,17,18,19,20]:
-    chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
+for chapter_idx in [32]:
+    chapter_text, chapter_info = get_chapter_text(chapters_dict, chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
@@ -480,7 +455,7 @@ for chapter_idx in [14,15,16,17,18,19,20]:
     chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
     chapter_chunks[1:] = [replace_right_quote_newline(chunk) for chunk in chapter_chunks[1:]]
 
-    if chapter_idx != 0 and chapter_idx != len(chapters)-1:
+    if chapter_idx != 0 and chapter_idx != len(chapters)-2 and chapter_idx != len(chapters)-1:
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
     # Deal with the header
@@ -506,6 +481,6 @@ for chapter_idx in [14,15,16,17,18,19,20]:
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
     # Sleep for 15 seconds
-    time.sleep(15)
+    time.sleep(10)
 
 
