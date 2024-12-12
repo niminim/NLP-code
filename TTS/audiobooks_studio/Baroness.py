@@ -46,6 +46,7 @@ def find_chapter_locations(text, chapters):
 
     return results
 
+
 # filter out non-beginning occurrences
 def filter_non_beginnings(chapter_locations):
     filtered_chapters = {}
@@ -57,6 +58,7 @@ def filter_non_beginnings(chapter_locations):
             filtered_chapters[chapter] = first_occurrence
 
     return filtered_chapters
+
 
 # Sort chapters by their starting position
 def sort_chapters_by_position(chapter_locations):
@@ -86,6 +88,32 @@ def create_chapters_dict(sorted_chapters, epub_content):
                                               }
 
     return chapters_dict
+
+def find_chapter_locations2(text, chapters):
+    """
+    Finds all occurrences of chapter titles in the text where the chapter name is the only content in the line.
+
+    Args:
+        text (str): The input text to search.
+        chapters (list of str): A list of chapter titles to look for.
+
+    Returns:
+        dict: A dictionary where keys are chapter titles and values are lists of (start, end) positions.
+    """
+    results = {}
+
+    for chapter in chapters:
+        # Match chapter titles that appear as the only content on the line
+        pattern = rf'^(?<!\S){re.escape(chapter)}(?!\S)$'  # Matches entire line with the chapter title
+
+        # Find all matches with start and end positions
+        matches = [(match.start(), match.end()) for match in re.finditer(pattern, text, re.MULTILINE)]
+
+        # Store the results for each chapter
+        results[chapter] = matches
+
+    return results
+
 
 def get_chapter_text(chapters, chapter_idx):
     # the function gets the chapters list and the chapter idx and return the corresponding text
@@ -427,6 +455,8 @@ chapter_locations = filter_non_beginnings(chapter_locations)
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
+# chapters_dict = find_chapter_locations2(epub_content, chapters) # Use only this to find in one line (matters to baroness)
+
 # # Print the chapter locations
 # for chapter, locations in chapter_locations.items():
 #     print(f"'{chapter}' found at positions: {locations}")
@@ -435,7 +465,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]:
+for chapter_idx in [14,15,16,17,18,19,20]:
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
