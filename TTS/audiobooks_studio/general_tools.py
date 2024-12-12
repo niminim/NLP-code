@@ -36,7 +36,7 @@ def convert_wav_to_mp3(wav_file, output_file, bitrate="320k"):
 # output_file= '/home/nim/The_Dragons_of_Krynn_NEW_by_ralph_350/09-Scourge_of_the_Wicked_Kendragon.mp3'  # Desired output MP3 file name
 # convert_wav_to_mp3(wav_file, output_file)
 
-base_folder = '/home/nim/Baroness_of_Blood_by_ralph_350'
+base_folder = '/home/nim/The_Dragons_of_Krynn_NEW_by_ralph_350'
 
 files = os.listdir(base_folder)
 # Filter files that start with a number and end with .wav

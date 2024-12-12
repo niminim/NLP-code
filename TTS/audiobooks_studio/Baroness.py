@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import re
 from pydub import AudioSegment
 import os
+import time
+
 
 from tqdm import tqdm
 
@@ -29,7 +31,7 @@ def read_epub(file_path):
     return '\n'.join(all_text)
 
 
-# Improved function to find all occurrences of chapters
+# Find all occurrences of chapters
 def find_chapter_locations(text, chapters):
     results = {}
 
@@ -44,7 +46,7 @@ def find_chapter_locations(text, chapters):
 
     return results
 
-# Function to filter out non-beginning occurrences
+# filter out non-beginning occurrences
 def filter_non_beginnings(chapter_locations):
     filtered_chapters = {}
 
@@ -56,7 +58,7 @@ def filter_non_beginnings(chapter_locations):
 
     return filtered_chapters
 
-# Function to sort chapters by their starting position
+# Sort chapters by their starting position
 def sort_chapters_by_position(chapter_locations):
     # Convert dictionary to a list of tuples and sort by the starting position (first element of the tuple)
     sorted_chapters = sorted(chapter_locations.items(), key=lambda x: x[1][0])
@@ -86,6 +88,7 @@ def create_chapters_dict(sorted_chapters, epub_content):
     return chapters_dict
 
 def get_chapter_text(chapters, chapter_idx):
+    # the function gets the chapters list and the chapter idx and return the corresponding text
     chapter_info = chapters_dict[chapters[chapter_idx]]
     chapter_start = chapter_info['name_start']
     chapter_end = chapter_info['chapter_end']
@@ -94,7 +97,7 @@ def get_chapter_text(chapters, chapter_idx):
     return chapter_text, chapter_info
 
 
-def efficient_split_text_to_chunks(text, max_length):
+def efficient_split_text_to_chunks(text, max_length): # this was used and worked
     """
     Splits the text into the largest possible chunks based on the assigned maximum length,
     ensuring each chunk ends at a sentence boundary ('.') when possible.
@@ -133,54 +136,178 @@ def efficient_split_text_to_chunks(text, max_length):
     return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
 
 
-def clean_text(chunk):
-    chunk = chunk.replace("\\'", "'")
-    chunk = chunk.replace("...", "").replace("..", "")
-    return chunk
+######## Clean text
+def replace_newline_sequences(input_text):
+    # Replace 3 or more newline characters with "  An ornamental break  ."
+    return re.sub(r'\n{3,}', '  ', input_text)
 
-def process_newlines(text):
+
+def process_chunk_add_new_section(chunk):
     """
-    Replaces any occurrence of '\n' (single or multiple) with a single space.
+    Cleans a single text chunk by applying specific transformations.
+    - Example: Replace sequences of 5+ newlines with 'New section - '.
+    """
+    return re.sub(r'\n{4,}', ' New section - ', chunk)
+
+
+def process_chunk_replace_quotes_newline(input_text):
+    """
+    Replaces instances of '"' followed by '\n' followed by '"' with a single space.
 
     Args:
-        text (str): The input text.
+        input_text (str): The input text.
 
     Returns:
-        str: The modified text with all '\n' sequences replaced by a single space.
+        str: The text with the pattern replaced by a single space.
     """
-    # Replace any sequence of \n (one or more) with a single space
-    return re.sub(r'\n+', ' ', text)
+    return re.sub(r'"\n"', '" "', input_text)
 
-def ensure_space_around_few_newlines(text):
+def replace_right_quote_newline(input_text):
     """
-    Ensures exactly one space before and after single or double newline characters (\n or \n\n).
-    Does not add additional spaces if already present.
+    Replaces instances of '”\n' with a single space.
 
     Args:
-        text (str): The input text.
+        input_text (str): The input text.
 
     Returns:
-        str: The modified text with spaces around newlines.
+        str: The text with the pattern replaced.
     """
-    # Add a space before and after \n or \n\n only if needed
-    text = re.sub(r'(?<!\S)(\n{1,2})(?!\S)', r' \1 ', text)  # Add spaces if missing
-    text = re.sub(r' +(\n{1,2}) +', r' \1 ', text)  # Normalize spaces around \n
+    return re.sub(r'”\n', ' ', input_text)
+
+
+def process_chunk_replace_quotes_newlines(input_text):
+    """
+    Replaces instances of '"' followed by one or more '\n' characters followed by '"' with a single space.
+
+    Args:
+        input_text (str): The input text.
+
+    Returns:
+        str: The text with the pattern replaced by a single space.
+    """
+    return re.sub(r'"\n{1,}"', '" "', input_text)
+
+
+def replace_newline_after_quote(input_text):
+    """
+    Replaces instances of '"\n' followed by a capital letter with '" '
+    and retains the capital letter.
+
+    Args:
+        input_text (str): The input text.
+
+    Returns:
+        str: The text with the pattern replaced.
+    """
+    return re.sub(r'"\n([A-Z])', r'" \1', input_text)
+
+
+
+# def process_newlines(text): # this was used and worked
+#     """
+#     Replaces any occurrence of '\n' (single or multiple) with a single space.
+#
+#     Args:
+#         text (str): The input text.
+#
+#     Returns:
+#         str: The modified text with all '\n' sequences replaced by a single space.
+#     """
+#     # Replace any sequence of \n (one or more) with a single space
+#     return re.sub(r'\n+', ' ', text)
+
+
+# def process_newlines(text):
+#     """
+#     Replaces sequences of multiple '\n' with ' \n ' (a space, a newline, and another space),
+#     and ensures single '\n' is surrounded by exactly one space, but avoids adding redundant spaces.
+#
+#     Args:
+#         text (str): The input text.
+#
+#     Returns:
+#         str: The modified text with '\n' properly normalized.
+#     """
+#     # Replace multiple \n with ' \n '
+#     text = re.sub(r'\n{2,}', ' \n ', text)
+#
+#     # Ensure a single \n is surrounded by a single space, avoiding duplicate spaces
+#     text = re.sub(r' ?\n ?', ' \n ', text)
+#
+#     return text
+
+######## End of Clean text
+
+
+###### Chapter_start
+def convert_latin_numbers_to_words(text):
+    """
+    Converts Latin numerals (I. to X.) into their word equivalents followed by '-'.
+    Does nothing for Latin numerals without a '.'.
+
+    Args:
+        text (str): Input text containing Latin numerals.
+
+    Returns:
+        str: Text with Latin numerals followed by '.' replaced by words followed by '-'.
+    """
+    # Mapping of Latin numerals (with '.') to their word equivalents
+    latin_to_words = {
+        '\nI.': ' One -', '\nII.': ' Two -', '\nIII.': ' Three -', '\nIV.': ' Four -',
+        '\nV.': ' Five -', '\nVI.': ' Six -', '\nVII.': ' Seven -', '\nVIII.': ' Eight -',
+        '\nIX.': ' Nine -', '\nX.': ' Ten -'
+    }
+
+    # Replace numerals followed by '.' with their word equivalents
+    for numeral, word in latin_to_words.items():
+        text = text.replace(numeral, word)
+
     return text
 
-def ensure_space_around_multiple_newlines(text):
+def keep_n_sequences_with_position(input_text, n):
     """
-    Ensures exactly one space before and after sequences of three or more newline characters (\n\n\n or more).
+    Keeps the first n newline sequences intact, replaces the rest with spaces,
+    and returns the ending position of the nth sequence.
 
-    Args:
-        text (str): The input text.
+    Parameters:
+    - input_text (str): The input text to process.
+    - n (int): The number of newline sequences to retain.
 
     Returns:
-        str: The modified text with spaces around sequences of three or more newlines.
+    - tuple: (processed_text, end_position_of_nth_sequence)
     """
-    # Ensure spaces around sequences of three or more \n
-    text = re.sub(r'(?<!\S)(\n{3,})(?!\S)', r' \1 ', text)  # Add spaces if missing
-    text = re.sub(r' +(\n{3,}) +', r' \1 ', text)  # Normalize spaces around \n
-    return text
+    # Split the input text into sequences based on newlines
+    sequences = re.split(r'(\n+)', input_text)
+
+    # Calculate the indices to retain
+    retain_indices = 2 * n - 1  # Each sequence has a preceding text and newline part
+
+    # Join retained parts
+    retained_part = ''.join(sequences[:retain_indices + 1])
+
+    # Replace the rest with spaces
+    replaced_part = ''.join(sequences[retain_indices + 1:]).replace('\n', ' ')
+
+    # Combine both parts
+    processed_text = retained_part + replaced_part
+
+    # Calculate the ending position of the nth newline sequence
+    nth_sequence_text = ''.join(sequences[:retain_indices + 1])
+    end_position_of_nth_sequence = len(nth_sequence_text)
+
+    return processed_text, end_position_of_nth_sequence
+
+
+def keep_n_sequences(input_text, n=2):
+    processed_text, end_position_of_nth_sequence = keep_n_sequences_with_position(input_text, n=2)
+
+    # Modify the text from the nth sequence onward
+    # Here, we apply `clean_newline` to the portion after the nth sequence
+    chunk_to_modify = processed_text[end_position_of_nth_sequence:]
+    modified_chunk = ''.join([process_chunk_replace_quotes_newline(chunk) for chunk in chunk_to_modify])
+    final_text = processed_text[:end_position_of_nth_sequence] + modified_chunk
+
+    return final_text
 
 def add_newline_after_chapter_name(text, chapter_name):
     """
@@ -196,6 +323,8 @@ def add_newline_after_chapter_name(text, chapter_name):
     if text.startswith(chapter_name):
         return text.replace(chapter_name, chapter_name + '\n', 1)
     return text
+###### End of Chapter_start
+
 
 def get_ref_name(ref):
     refs = {'kate_1_2_much_longer' : 'kate',
@@ -203,6 +332,24 @@ def get_ref_name(ref):
             'ralph' : 'ralph'}
 
     return refs[ref]
+
+
+######## Finalize files
+def chapter_idx_str(chapter_idx, start_zero):
+    """
+    Returns the formatted chapter number based on the chapter index and starting point,
+    with a '-' appended at the end.
+
+    Args:
+        chapter_idx (int): The chapter index (e.g., 0, 1, 2, etc.).
+        start_zero (bool): If True, chapter numbers start from 0. If False, start from 1.
+
+    Returns:
+        str: The formatted chapter number as a string in the form "00-", "01-", etc.
+    """
+    chapter_number = chapter_idx if start_zero else chapter_idx + 1
+    return f"{chapter_number:02d}-"
+
 
 def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     """
@@ -243,31 +390,8 @@ def concat_wavs_in_folder(folder_path, output_file, format='wav'):
     elif format.lower() == 'mp3':
         combined.export(output_file, format="mp3", bitrate="320")
     print(f"All WAV files concatenated and saved as '{output_file}'.")
+######## End of Finalize files
 
-
-def convert_latin_numbers_to_words(text):
-    """
-    Converts Latin numerals (I. to X.) into their word equivalents followed by '-'.
-    Does nothing for Latin numerals without a '.'.
-
-    Args:
-        text (str): Input text containing Latin numerals.
-
-    Returns:
-        str: Text with Latin numerals followed by '.' replaced by words followed by '-'.
-    """
-    # Mapping of Latin numerals (with '.') to their word equivalents
-    latin_to_words = {
-        '\nI.': ' One -', '\nII.': ' Two -', '\nIII.': ' Three -', '\nIV.': ' Four -',
-        '\nV.': ' Five -', '\nVI.': ' Six -', '\nVII.': ' Seven -', '\nVIII.': ' Eight -',
-        '\nIX.': ' Nine -', '\nX.': ' Ten -'
-    }
-
-    # Replace numerals followed by '.' with their word equivalents
-    for numeral, word in latin_to_words.items():
-        text = text.replace(numeral, word)
-
-    return text
 
 #############################################################################
 
@@ -284,6 +408,7 @@ ref = 'ralph' # kate_1_2_much_longer, amanda_leigh2, ralph, rebecca
 chunk_size = 350
 audio_format = 'wav'
 ref_name = get_ref_name(ref) # kate, amanda, ralph
+start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
 book_name = 'Baroness_of_Blood' + f"_by_{ref_name}_{chunk_size}"
@@ -310,7 +435,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [32]:
+for chapter_idx in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]:
     chapter_text, chapter_info = get_chapter_text(chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
@@ -320,15 +445,20 @@ for chapter_idx in [32]:
 
 
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
-    chapter_chunks = [clean_text(chunk) for chunk in chapter_chunks]
-    chapter_chunks = [process_newlines(chunk) for chunk in chapter_chunks]
-    chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
+    chapter_chunks[1:] = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks[1:]] # Pay attention here to the num of \n (especially for paragraphs
+    chapter_chunks[1:] = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks[1:]] # There's also a function for newlines
+    chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks[1:] = [replace_right_quote_newline(chunk) for chunk in chapter_chunks[1:]]
 
     if chapter_idx != 0 and chapter_idx != len(chapters)-1:
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+    # Deal with the header
+    chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=1)
+    # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
+
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
+    # tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter {chapter_idx+1} - Processing chunks")):
@@ -340,7 +470,12 @@ for chapter_idx in [32]:
         #     break
 
     # Concat parts to assemble the chapter
-    output_file = os.path.join(book_path, chapter_name_adj + f".{audio_format}")  # Replace with your output file path
+    # # Concat parts to assemble the chapter
+    chapter_str = chapter_idx_str(chapter_idx, start_zero)
+    output_file = os.path.join(book_path, chapter_str + chapter_name_adj + f".{audio_format}")  # Replace with your output file path
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
+
+    # Sleep for 15 seconds
+    time.sleep(15)
 
 
