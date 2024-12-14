@@ -31,64 +31,37 @@
 
         /* Styling for Text Area */
         textarea {
-            width: 50%; /* Half of the page width */
-            height: 150px; /* Adjusted height */
+            width: 50%;
+            height: 150px;
             padding: 15px;
             border: 1px solid #ccc;
-            border-radius: 5px; /* Rounded corners */
+            border-radius: 5px;
             background-color: #ffffff;
             color: #333;
-        }
-
-        /* Character counter styling */
-        #charCount {
-            font-size: 0.9rem;
-            color: #555;
-            margin-top: 5px;
-            text-align: left;
-            width: 50%; /* Align to the width of the text box */
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Narrator section: Label and dropdown styling */
-        .narrator-section {
-            margin-top: -20px; /* Adjust the Narrator block upwards */
-        }
-
-        .narrator-label {
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 5px; /* Space below the label */
-            text-align: center;
         }
 
         /* Dropdown Styling */
         select {
-            width: 190px; /* Match button width */
-            height: 36px; /* Match button height */
+            width: 190px;
+            height: 36px;
             font-size: 16px;
-            padding: 0 10px; /* Horizontal padding for text alignment */
+            padding: 0 10px;
             border: 1px solid #ccc;
-            border-radius: 5px; /* Rounded corners */
+            border-radius: 5px;
             background-color: #ffffff;
             color: #333;
-            box-sizing: border-box; /* Padding doesn't affect width/height */
+            box-sizing: border-box;
         }
 
         /* Button Styling */
-        .button-section {
-            margin-top: -10px; /* Adjust the button section upwards */
-        }
-
         button {
-            width: 190px; /* Explicitly set button width */
-            height: 36px; /* Explicitly set button height */
+            width: 190px;
+            height: 36px;
             font-size: 16px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px; /* Rounded corners */
+            border-radius: 5px;
             cursor: pointer;
         }
 
@@ -98,9 +71,9 @@
 
         /* Audio player styling */
         audio {
-            width: 380px; /* Match the button's width */
-            margin-top: 20px; /* Space above the player */
-            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            width: 380px;
+            margin-top: 20px;
+            box-sizing: border-box;
         }
 
         /* Status message styling */
@@ -109,7 +82,7 @@
             font-size: 1rem;
             color: green;
             font-weight: bold;
-            visibility: hidden; /* Initially hidden */
+            visibility: hidden;
         }
     </style>
 </head>
@@ -119,20 +92,28 @@
         <!-- Text Input Area -->
         <div class="form-group">
             <textarea name="text" id="text" placeholder="Type your text here..."></textarea>
-            <p id="charCount">0 characters</p> <!-- Character Counter -->
+        </div>
+
+        <!-- Model Selection -->
+        <div class="form-group">
+            <label for="model">Model</label>
+            <select name="model" id="model">
+                <option value="light">Light Model</option>
+                <option value="heavier">Heavier Model</option>
+            </select>
         </div>
 
         <!-- Narrator Selection -->
-        <div class="form-group narrator-section">
-            <label for="speaker" class="narrator-label">Narrator</label>
-            <select name="speaker" id="speaker">
+        <div class="form-group">
+            <label for="speaker">Narrator</label>
+            <select name="speaker" id="speaker" disabled>
                 <option value="ralph">Ralph</option>
                 <option value="amanda">Amanda</option>
             </select>
         </div>
 
         <!-- Convert Button -->
-        <div class="form-group button-section">
+        <div class="form-group">
             <button type="submit">Convert to Speech</button>
         </div>
     </form>
@@ -144,66 +125,70 @@
     <audio id="audioPlayer" controls hidden></audio>
 
     <script>
-        // Form submission logic
         const form = document.getElementById('ttsForm');
+        const modelDropdown = document.getElementById('model');
+        const speakerDropdown = document.getElementById('speaker');
         const audioPlayer = document.getElementById('audioPlayer');
         const statusMessage = document.getElementById('statusMessage');
         const submitButton = form.querySelector("button");
 
-        // Character counter logic
-        const textArea = document.getElementById('text');
-        const charCount = document.getElementById('charCount');
-
-        // Update character count on input
-        textArea.addEventListener('input', () => {
-            const textLength = textArea.value.length;
-            charCount.textContent = `${textLength} characters`;
+        // Enable or disable speaker dropdown based on model selection
+        modelDropdown.addEventListener('change', () => {
+            if (modelDropdown.value === 'heavier') {
+                speakerDropdown.disabled = false;
+            } else {
+                speakerDropdown.disabled = true;
+            }
         });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Get text and narrator selection
             const text = document.getElementById('text').value;
-            const speaker = document.getElementById('speaker').value;
+            const model = modelDropdown.value;
+            const speaker = speakerDropdown.value;
 
             if (!text.trim()) {
                 alert("Please enter some text!");
                 return;
             }
 
-            // Indicate processing
+            console.log("DEBUG: Text submitted:", text);
+            console.log("DEBUG: Model selected:", model);
+            console.log("DEBUG: Speaker selected:", speaker);
+
             submitButton.textContent = "Converting...";
             statusMessage.style.visibility = "hidden";
 
             try {
-                // Send POST request to the server
                 const response = await fetch('/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json',
                     },
-                    body: new URLSearchParams({ text, speaker })
+                    body: JSON.stringify({ text, model, speaker }),
                 });
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log("DEBUG: Response from server:", data);
+
                     const audioUrl = data.audio_url;
 
-                    // Set audio source and show the player
-                    audioPlayer.src = audioUrl;
+                    // Add a cache-busting query parameter to prevent caching
+                    const cacheBuster = new Date().getTime();
+                    audioPlayer.src = `${audioUrl}?t=${cacheBuster}`;
                     audioPlayer.hidden = false;
                     audioPlayer.play();
 
-                    // Show success message
                     statusMessage.style.visibility = "visible";
                     statusMessage.textContent = "Conversion completed successfully!";
                 } else {
-                    alert("An error occurred while processing your request.");
+                    alert("An error occurred during conversion.");
                 }
             } catch (error) {
-                console.error("Error:", error);
-                alert("Failed to connect to the server. Please try again.");
+                console.error("DEBUG: Error:", error);
+                alert("Failed to connect to the server.");
             } finally {
                 submitButton.textContent = "Convert to Speech";
             }

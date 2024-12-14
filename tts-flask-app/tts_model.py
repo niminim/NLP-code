@@ -20,6 +20,18 @@ class Basic_TTSModel:
         tts.save(output_path)
 
 
+class Basic_TTSModel:
+    @staticmethod
+    def generate_audio(text, output_path="static/output_light.wav"):
+        """
+        Generate speech audio from text using gTTS.
+        :param text: Input text to be converted to speech.
+        :param output_path: Path to save the generated audio file.
+        """
+        tts = gTTS(text)
+        tts.save(output_path)
+
+
 from TTS.api import TTS
 import torch
 

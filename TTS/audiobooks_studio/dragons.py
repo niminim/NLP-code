@@ -371,7 +371,7 @@ def add_newline_after_chapter_name(text, chapter_name):
 
 def get_ref_name(ref):
     refs = {'kate_1_2_much_longer' : 'kate',
-            'amanda_leigh2' : 'amanda',
+            'amanda' : 'amanda',
             'ralph' : 'ralph'}
 
     return refs[ref]
