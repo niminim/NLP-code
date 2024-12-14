@@ -87,4 +87,15 @@ input_text= 'Scourge of the Wicked \nJanet Nill\n\n\n\n\n\n\n"But I was only… 
 
 
 input_text = '”She hesitated, then said, “Very well, but'
+
 tts.tts_to_file(text=input_text, speaker_wav="/home/nim/Documents/ralph.wav", language="en", file_path="/home/nim/TRY.wav")
+
+
+
+
+# Manual Additions
+text = '\n\n\n\n\n\n\n\nPart One - The Legacy of Baron Janosk'
+text = '\n\n\n\n\n\n\n\nPart Two - The Dance of Death'
+text = '\n\n\n\n\n\n\n\nPart Three - The Judgment of th Fates'
+
+tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/ralph.wav", language="en", file_path="/home/nim/Part_Three-The_Judgment_of_Fates.wav")

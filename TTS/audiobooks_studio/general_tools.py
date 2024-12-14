@@ -36,7 +36,9 @@ def convert_wav_to_mp3(wav_file, output_file, bitrate="320k"):
 # output_file= '/home/nim/The_Dragons_of_Krynn_NEW_by_ralph_350/09-Scourge_of_the_Wicked_Kendragon.mp3'  # Desired output MP3 file name
 # convert_wav_to_mp3(wav_file, output_file)
 
-base_folder = '/home/nim/The_Dragons_of_Krynn_NEW_by_ralph_350'
+base_folder = '/home/nim/Baroness_of_Blood_by_ralph_350'
+dest_folder = os.path.join(base_folder, 'MP3')
+os.makedirs(dest_folder, exist_ok=True)
 
 files = os.listdir(base_folder)
 # Filter files that start with a number and end with .wav
@@ -46,7 +48,7 @@ print(numbered_wav_files)
 
 for filename in numbered_wav_files:
     wav_file = os.path.join(base_folder, filename)
-    new_filepath = wav_file.replace('.wav','.mp3' )
-    convert_wav_to_mp3(wav_file, new_filepath)
+    dest_path = os.path.join(dest_folder, filename.replace('.wav','.mp3'))
+    convert_wav_to_mp3(wav_file, dest_path)
 
 

@@ -422,7 +422,7 @@ book_path = os.path.join(base, book_name)
 chapters = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
             'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three',
             'Twenty-four', 'Twenty-five', 'Twenty-six', 'Twenty-seven','Twenty-eight', 'Twenty-nine', 'Thirty', 'Thirty-one','Epilogue',
-            'About the Author', 'Part IThe Legacy'] # Parts appears at the end! only used as a stop point
+            'Back Cover', 'About the Author'] # Parts appears at the end! only used as a stop point
 
 
 # Find all locations of chapter titles
@@ -430,7 +430,6 @@ chapter_locations = find_chapter_locations2(epub_content, chapters)
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
-# chapters_dict = find_chapter_locations2(epub_content, chapters) # Use only this to find in one line (matters to baroness)
 
 # # Print the chapter locations
 # for chapter, locations in chapter_locations.items():
@@ -440,7 +439,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [32]:
+for chapter_idx in [33]:
     chapter_text, chapter_info = get_chapter_text(chapters_dict, chapters, chapter_idx)
 
     chapter_name = chapters[chapter_idx]
@@ -455,11 +454,11 @@ for chapter_idx in [32]:
     chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
     chapter_chunks[1:] = [replace_right_quote_newline(chunk) for chunk in chapter_chunks[1:]]
 
-    if chapter_idx != 0 and chapter_idx != len(chapters)-2 and chapter_idx != len(chapters)-1:
+    if chapter_idx != 0 and chapter_idx != len(chapters)-3 and chapter_idx != len(chapters)-1: # last is used only as a stop point
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
     # Deal with the header
-    chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=1)
+    # chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=1)
     # chapter_chunks[0] = add_newline_after_chapter_name(chapter_chunks[0], chapter_name)
 
     # device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -481,6 +480,6 @@ for chapter_idx in [32]:
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
     # Sleep for 15 seconds
-    time.sleep(10)
+    # time.sleep(5)
 
 
