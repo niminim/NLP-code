@@ -24,6 +24,9 @@
         /* Form group container for alignment */
         .form-group {
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Styling for Text Area */
@@ -37,28 +40,50 @@
             color: #333;
         }
 
-        /* Label styling */
+        /* Character counter styling */
+        #charCount {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+            text-align: left;
+            width: 50%; /* Align to the width of the text box */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Narrator section: Label and dropdown styling */
+        .narrator-section {
+            margin-top: -20px; /* Adjust the Narrator block upwards */
+        }
+
         .narrator-label {
             font-size: 1rem;
             font-weight: bold;
-            display: block;
-            margin-bottom: 5px; /* Space below label */
+            margin-bottom: 5px; /* Space below the label */
+            text-align: center;
         }
 
-        /* Dropdown styling */
+        /* Dropdown Styling */
         select {
-            width: 12.5%; /* Keep natural dropdown width */
+            width: 190px; /* Match button width */
+            height: 36px; /* Match button height */
             font-size: 16px;
-            padding: 8px;
+            padding: 0 10px; /* Horizontal padding for text alignment */
             border: 1px solid #ccc;
             border-radius: 5px; /* Rounded corners */
             background-color: #ffffff;
             color: #333;
+            box-sizing: border-box; /* Padding doesn't affect width/height */
         }
 
-        /* Button styling */
+        /* Button Styling */
+        .button-section {
+            margin-top: -10px; /* Adjust the button section upwards */
+        }
+
         button {
-            padding: 10px 20px;
+            width: 190px; /* Explicitly set button width */
+            height: 36px; /* Explicitly set button height */
             font-size: 16px;
             background-color: #007bff;
             color: white;
@@ -73,8 +98,9 @@
 
         /* Audio player styling */
         audio {
-            margin-top: 20px;
-            width: 25%; /* Matches text area width */
+            width: 380px; /* Match the button's width */
+            margin-top: 20px; /* Space above the player */
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
         }
 
         /* Status message styling */
@@ -93,10 +119,11 @@
         <!-- Text Input Area -->
         <div class="form-group">
             <textarea name="text" id="text" placeholder="Type your text here..."></textarea>
+            <p id="charCount">0 characters</p> <!-- Character Counter -->
         </div>
 
         <!-- Narrator Selection -->
-        <div class="form-group">
+        <div class="form-group narrator-section">
             <label for="speaker" class="narrator-label">Narrator</label>
             <select name="speaker" id="speaker">
                 <option value="ralph">Ralph</option>
@@ -105,7 +132,7 @@
         </div>
 
         <!-- Convert Button -->
-        <div class="form-group">
+        <div class="form-group button-section">
             <button type="submit">Convert to Speech</button>
         </div>
     </form>
@@ -122,6 +149,16 @@
         const audioPlayer = document.getElementById('audioPlayer');
         const statusMessage = document.getElementById('statusMessage');
         const submitButton = form.querySelector("button");
+
+        // Character counter logic
+        const textArea = document.getElementById('text');
+        const charCount = document.getElementById('charCount');
+
+        // Update character count on input
+        textArea.addEventListener('input', () => {
+            const textLength = textArea.value.length;
+            charCount.textContent = `${textLength} characters`;
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
