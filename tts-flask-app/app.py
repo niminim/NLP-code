@@ -1,35 +1,60 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, render_template, jsonify
+from tts_model import TTSModel
 import os
-from tts_model import TTSModel  # Import the TTS model class
+import uuid  # For generating unique filenames
 
+# Initialize the Flask app
 app = Flask(__name__)
 
 # Initialize the TTS model
 tts_model = TTSModel()
 
-@app.route('/convert', methods=['POST'])
-def convert_text_to_speech():
-    """
-    Endpoint to convert text to speech and return an audio file.
-    """
-    try:
-        # Get the text from the POST request
-        data = request.json
-        text = data.get('text', '').strip()
+# Ensure the static folder exists
+if not os.path.exists("static"):
+    os.makedirs("static")
 
-        if not text:
-            return jsonify({"error": "No text provided"}), 400
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    if request.method == 'GET':
+        return render_template('index.html')
 
-        # Generate the audio file
-        audio_path = "output.wav"  # Temporary output file
-        tts_model.generate_audio(text, output_path=audio_path)
+    elif request.method == 'POST':
+        try:
+            # Get the text and speaker selection from the form
+            text = request.form.get('text', '').strip()
+            speaker = request.form.get('speaker', 'ralph').lower()  # Default to 'ralph'
 
-        # Return the audio file
-        return send_file(audio_path, mimetype='audio/wav', as_attachment=True)
+            if not text:
+                return jsonify({"error": "No text provided"}), 400
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            # Set the speaker_wav based on the selected speaker
+            if speaker == 'ralph':
+                speaker_wav_path = "/home/nim/Documents/ralph.wav"
+            elif speaker == 'amanda':
+                speaker_wav_path = "/home/nim/Documents/amanda_leigh2.wav"
+            else:
+                return jsonify({"error": "Invalid speaker selected"}), 400
+
+            # Ensure the speaker reference file exists
+            if not os.path.exists(speaker_wav_path):
+                raise FileNotFoundError(f"Speaker reference file not found: {speaker_wav_path}")
+
+            # Generate a unique file name for the audio
+            unique_filename = f"static/{uuid.uuid4().hex}.wav"
+
+            # Generate the audio file
+            tts_model.generate_audio(text, output_path=unique_filename, speaker_wav=speaker_wav_path)
+
+            # Check if the file exists
+            if not os.path.exists(unique_filename):
+                raise FileNotFoundError(f"Audio file not found: {unique_filename}")
+
+            # Return the audio URL to the frontend
+            return jsonify({"audio_url": f"/{unique_filename}"})
+
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Run the app
     app.run(debug=True, host='0.0.0.0', port=5000)

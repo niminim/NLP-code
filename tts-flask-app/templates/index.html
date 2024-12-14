@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech App</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f0f8ff; /* Light blue background */
+            color: #333;
+        }
+
+        /* Title styling */
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #0056b3;
+        }
+
+        /* Form group container for alignment */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        /* Styling for Text Area */
+        textarea {
+            width: 50%; /* Half of the page width */
+            height: 150px; /* Adjusted height */
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px; /* Rounded corners */
+            background-color: #ffffff;
+            color: #333;
+        }
+
+        /* Label styling */
+        .narrator-label {
+            font-size: 1rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px; /* Space below label */
+        }
+
+        /* Dropdown styling */
+        select {
+            width: 12.5%; /* Keep natural dropdown width */
+            font-size: 16px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px; /* Rounded corners */
+            background-color: #ffffff;
+            color: #333;
+        }
+
+        /* Button styling */
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Audio player styling */
+        audio {
+            margin-top: 20px;
+            width: 25%; /* Matches text area width */
+        }
+
+        /* Status message styling */
+        #statusMessage {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: green;
+            font-weight: bold;
+            visibility: hidden; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <h1>Text-to-Speech App</h1>
+    <form id="ttsForm">
+        <!-- Text Input Area -->
+        <div class="form-group">
+            <textarea name="text" id="text" placeholder="Type your text here..."></textarea>
+        </div>
+
+        <!-- Narrator Selection -->
+        <div class="form-group">
+            <label for="speaker" class="narrator-label">Narrator</label>
+            <select name="speaker" id="speaker">
+                <option value="ralph">Ralph</option>
+                <option value="amanda">Amanda</option>
+            </select>
+        </div>
+
+        <!-- Convert Button -->
+        <div class="form-group">
+            <button type="submit">Convert to Speech</button>
+        </div>
+    </form>
+
+    <!-- Status Message -->
+    <p id="statusMessage">Conversion completed successfully!</p>
+
+    <!-- Audio Player -->
+    <audio id="audioPlayer" controls hidden></audio>
+
+    <script>
+        // Form submission logic
+        const form = document.getElementById('ttsForm');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const statusMessage = document.getElementById('statusMessage');
+        const submitButton = form.querySelector("button");
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Get text and narrator selection
+            const text = document.getElementById('text').value;
+            const speaker = document.getElementById('speaker').value;
+
+            if (!text.trim()) {
+                alert("Please enter some text!");
+                return;
+            }
+
+            // Indicate processing
+            submitButton.textContent = "Converting...";
+            statusMessage.style.visibility = "hidden";
+
+            try {
+                // Send POST request to the server
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ text, speaker })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const audioUrl = data.audio_url;
+
+                    // Set audio source and show the player
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.hidden = false;
+                    audioPlayer.play();
+
+                    // Show success message
+                    statusMessage.style.visibility = "visible";
+                    statusMessage.textContent = "Conversion completed successfully!";
+                } else {
+                    alert("An error occurred while processing your request.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to connect to the server. Please try again.");
+            } finally {
+                submitButton.textContent = "Convert to Speech";
+            }
+        });
+    </script>
+</body>
+</html>
