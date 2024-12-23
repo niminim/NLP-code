@@ -22,7 +22,8 @@ def convert_to_speech():
         text = data.get("text")
         model = data.get("model")
         speaker = data.get("speaker", None)  # Speaker is only relevant for the heavier model
-        output_path = "static/output.wav"
+        output_file_suffix = speaker if speaker else "default"  # Use speaker or 'default'
+        output_path = f"static/output_{output_file_suffix}.wav"  # Dynamic output path
 
         try:
             if model == "light":
@@ -59,7 +60,7 @@ def convert_to_speech():
                 return jsonify({"error": "Failed to generate audio file."}), 500
 
             # Return success response with audio URL
-            return jsonify({"message": "Conversion completed successfully", "audio_url": "/static/output.wav"})
+            return jsonify({"message": "Conversion completed successfully", "audio_url": f"/{output_path}"})
 
         except Exception as e:
             print("DEBUG: Exception occurred:", e)

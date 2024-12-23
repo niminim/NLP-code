@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text-to-Speech App</title>
+    <title>Text-to-Speech Lean App</title>
     <style>
         /* General body styling */
         body {
@@ -38,6 +38,17 @@
             border-radius: 5px;
             background-color: #ffffff;
             color: #333;
+        }
+
+        /* Character counter styling */
+        #charCount {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+            text-align: left;
+            width: 50%; /* Align to the width of the text box */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Dropdown Styling */
@@ -87,11 +98,12 @@
     </style>
 </head>
 <body>
-    <h1>Text-to-Speech App</h1>
+    <h1>Text-to-Speech Lean App</h1>
     <form id="ttsForm">
         <!-- Text Input Area -->
         <div class="form-group">
             <textarea name="text" id="text" placeholder="Type your text here..."></textarea>
+            <p id="charCount">0 characters</p> <!-- Character Counter -->
         </div>
 
         <!-- Model Selection -->
@@ -107,8 +119,11 @@
         <div class="form-group">
             <label for="speaker">Narrator</label>
             <select name="speaker" id="speaker" disabled>
-                <option value="ralph">Ralph</option>
-                <option value="amanda">Amanda</option>
+                <option value="ralph">Ralph Lister</option>
+                <option value="amanda">Amanda Leigh</option>
+                <option value="kate_1_2_much_longer">Kate Reading</option>
+                <option value="kate2">Kate Reading 2</option>
+                <option value="Mary_Jane_Wells">Mary Jane Wells</option>
             </select>
         </div>
 
@@ -131,6 +146,16 @@
         const audioPlayer = document.getElementById('audioPlayer');
         const statusMessage = document.getElementById('statusMessage');
         const submitButton = form.querySelector("button");
+
+        // Character counter logic
+        const textArea = document.getElementById('text');
+        const charCount = document.getElementById('charCount');
+
+        // Update character count on input
+        textArea.addEventListener('input', () => {
+            const textLength = textArea.value.length;
+            charCount.textContent = `${textLength} characters`;
+        });
 
         // Enable or disable speaker dropdown based on model selection
         modelDropdown.addEventListener('change', () => {
