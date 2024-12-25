@@ -57,7 +57,7 @@ wav = tts_model.tts(text=text)
 tts_model = TTS( "tts_models/en/ljspeech/glow-tts").to(device)
 wav = tts_model.tts(text=text)
 tts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-wav = tts_model.tts(text=text, speaker_wav="/home/nim/Documents/amanda_leigh2.wav", language="en")
+wav = tts_model.tts(text=text, speaker_wav="/home/nim/Documents/amanda.wav", language="en")
 
 
 # 4. Save the generated audio to a WAV file
@@ -65,4 +65,23 @@ filename = 'TRY_models'
 sf.write(f"//home/nim/{filename}.wav", wav, samplerate=22050)
 print(f"Audio generated and saved as {filename}.wav'")
 
+
+# Bark is not that good in 0.25.1, also switches male and female
+# # Load the model to GPU
+# # Bark is really slow on CPU, so we recommend using GPU.
+# tts = TTS("tts_models/multilingual/multi-dataset/bark").to("cuda")
+# # random speaker
+# tts.tts_to_file(text, file_path="/home/nim/try_bark.wav")
+
+
+
+from huggingface_hub import HfApi
+
+# Initialize the API
+api = HfApi()
+
+# Search for models related to TTS
+models = api.list_models(filter="text-to-speech")
+for model in models:
+    print(model.modelId)
 
