@@ -337,7 +337,11 @@ Almost everyone in the pub joins in when Lucas starts singing Happy Birthday, an
 """
 
 
-ref = 'amanda' # kate_1_2_much_longer, amanda_leigh2, ralph, rebecca
+ref = 'ella_lynch2' # kate_reading, amanda_leigh, ralph, rebecca,
+# helen_keeley, jenna_coleman, ella_lynch, ella_lynch2, billie_brown, kim_bretton, imogen_church, cathleen_mccarron, jessica_ball, perdita_weeks,
+# eleanor_tomlinson, olivia_vinall, fiona_hardingham, gemma_whelan, tuppence_middleton, daisy_edgar_jones, emilia_clarke
+# pippa_bennett_warner, rosie_jones, lydia_wilson
+
 chunk_size = 350
 audio_format = 'wav'
 
@@ -364,12 +368,10 @@ for idx, chunk in enumerate(tqdm(chapter_chunks)):
     print(chunk)
     tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-    # if idx == 8:
-    #     break
 
 # Concat parts to assemble the chapter
 # # Concat parts to assemble the chapter
-output_file = chapter_folder  + '/'+ f"Sample.{audio_format}"  # Replace with your output file path
+output_file = chapter_folder  + '/'+ f"Sample_{ref}.{audio_format}"  # Replace with your output file path
 concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
 

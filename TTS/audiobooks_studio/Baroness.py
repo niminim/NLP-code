@@ -329,13 +329,6 @@ def add_newline_after_chapter_name(text, chapter_name):
 ###### End of Chapter_start
 
 
-def get_ref_name(ref):
-    refs = {'kate_1_2_much_longer' : 'kate',
-            'amanda_leigh2' : 'amanda',
-            'ralph' : 'ralph'}
-
-    return refs[ref]
-
 
 ######## Finalize files
 def chapter_idx_str(chapter_idx, start_zero):
@@ -407,10 +400,9 @@ epub_content = read_epub(file_path)
 # Print a portion of the EPUB content
 # print(epub_content[8000:10000])  # Print the first 1000 characters
 
-ref = 'ralph' # kate_1_2_much_longer, amanda_leigh2, ralph, rebecca
+ref = 'ralph' # kate_reading, amanda_leigh, ralph, rebecca
 chunk_size = 350
 audio_format = 'wav'
-ref_name = get_ref_name(ref) # kate, amanda, ralph
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'

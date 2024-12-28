@@ -236,8 +236,8 @@ Someone inside the van turned down the music. "Cody! Call me after you settle in
 """
 
 
-ref = 'rebecca' # kate_1_2_much_longer, amanda_leigh2, ralph, rebecca
-chunk_size = 200
+ref = 'rebecca' # kate_reading, amanda_leigh, ralph, rebecca
+chunk_size = 350
 audio_format = 'wav'
 
 base = '/home/nim'
