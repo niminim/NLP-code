@@ -35,32 +35,50 @@ def read_epub(file_path):
 ########## Locate chapters
 
 # Find all occurrences of chapters
-def find_chapter_locations(text, chapters):
-    results = {}
+# def find_chapter_locations(text, chapters):
+#     results = {}
+#
+#     for chapter in chapters:
+#         # Match chapter titles preceded and followed by newlines
+#         pattern = rf'(?<!\S){re.escape(chapter)}(?!\S)'  # Matches standalone words, avoiding word boundaries (is more flexible for in-line standalone matches
+#
+#         matches = [(match.start(), match.end()) for match in re.finditer(pattern, text)]
+#
+#         # Store the results for each chapter in a dictionary
+#         results[chapter] = matches
+#
+#     return results
+
+
+def find_chapter_locations_full_block(text, chapters):
+    """
+    Finds all occurrences of chapter titles in the text where:
+    - The chapter title is preceded by more than 3 newline characters.
+    - The chapter title is followed by exactly 1 newline.
+
+    Captures the entire block including the preceding and following newlines.
+
+    Args:
+        text (str): The input text to search.
+        chapters (list of str): A list of chapter titles to look for.
+
+    Returns:
+        list: A list of tuples in the format [('Chapter Name', (start, end))].
+    """
+    results = []
 
     for chapter in chapters:
-        # Match chapter titles preceded and followed by newlines
-        pattern = rf'(?<!\S){re.escape(chapter)}(?!\S)'  # Matches standalone words, avoiding word boundaries (is more flexible for in-line standalone matches
+        # Pattern to match the chapter name with specified newline conditions
+        pattern = rf'(\n{{3,}}){re.escape(chapter)}(\n)'
 
-        matches = [(match.start(), match.end()) for match in re.finditer(pattern, text)]
+        # Find all matches including the newline blocks and chapter name
+        matches = [(match.start(0), match.end(0)) for match in re.finditer(pattern, text)]
 
-        # Store the results for each chapter in a dictionary
-        results[chapter] = matches
+        # Add chapter name and its positions to the results
+        for start, end in matches:
+            results.append((chapter, (start, end)))
 
     return results
-
-
-# filter out non-beginning occurrences
-def filter_non_beginnings(chapter_locations):
-    filtered_chapters = {}
-
-    for chapter, locations in chapter_locations.items():
-        if locations:  # Ensure there are matches
-            # Keep only the first occurrence (smallest start position)
-            first_occurrence = min(locations, key=lambda loc: loc[0])
-            filtered_chapters[chapter] = first_occurrence
-
-    return filtered_chapters
 
 
 # Sort chapters by their starting position
@@ -98,37 +116,6 @@ def create_chapters_dict(sorted_chapters, epub_content):
                                               }
 
     return chapters_dict
-
-
-def find_chapter_locations2_full_block(text, chapters):
-    """
-    Finds all occurrences of chapter titles in the text where:
-    - The chapter title is surrounded by blocks of newlines.
-    - Captures the entire block of newlines along with the chapter title.
-
-    Returns results as a list of tuples in the format: [('Chapter Name', (start, end))].
-
-    Args:
-        text (str): The input text to search.
-        chapters (list of str): A list of chapter titles to look for.
-
-    Returns:
-        list: A list of tuples where each tuple contains the chapter title and its (start, end) positions.
-    """
-    results = []
-
-    for chapter in chapters:
-        # Pattern to match entire newline block, including the chapter title
-        pattern = rf'(\n+){re.escape(chapter)}(\n{{3,}})'
-
-        # Find all matches and include entire match (newlines + chapter title)
-        matches = [(match.start(0), match.end(0)) for match in re.finditer(pattern, text)]
-
-        # Add chapter name and its positions to the results
-        for start, end in matches:
-            results.append((chapter, (start, end)))
-
-    return results
 
 
 def get_chapter_text(chapters_dict, chapters, chapter_idx):
@@ -183,9 +170,25 @@ def efficient_split_text_to_chunks(text, max_length): # this was used and worked
 
 
 ######## Clean text
-# def replace_newline_sequences(input_text):
-#     # Replace 3 or more newline characters with "  An ornamental break  ."
-#     return re.sub(r'\n{3,}', '  ', input_text)
+
+# To tackles first chpater name followed by a block of \n with no whitespace between the text
+def add_space_after_first_newline_block(text):
+    """
+    Adds a whitespace after the first occurrence of 3 or more newlines in the text.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with a space added after the first block of 3 or more newlines.
+    """
+    # Match the first occurrence of 3 or more newlines
+    pattern = r'(\n{3,})(?! )'
+
+    # Add a space after the newline block
+    modified_text = re.sub(pattern, r'\1 ', text, count=1)
+
+    return modified_text
 
 
 def process_chunk_add_new_section(chunk):
@@ -321,6 +324,8 @@ def convert_latin_numbers_to_words(text):
 
     return text
 
+# to deal with ' wire.\n\n\n\n\n\n\n\nScourge of the Wicked Kendragon\nJanet Pack\n\n\n\n\n\n\n"But I '
+# (here, it's best to keep it)
 def keep_n_sequences_with_position(input_text, n):
     """
     Keeps the first n newline sequences intact, replaces the rest with spaces,
@@ -474,7 +479,7 @@ chapters = ['Seven Hymns of the Dragon', 'The Final Touch', 'Night of Falling St
 
 
 # Find all locations of chapter titles
-chapter_locations = find_chapter_locations2_full_block(epub_content, chapters)
+chapter_locations = find_chapter_locations_full_block(epub_content, chapters) # different here
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
@@ -501,6 +506,7 @@ for chapter_idx in [8]:
         chapter_text = convert_latin_numbers_to_words(chapter_text)
 
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
+    chapter_chunks[0] = add_space_after_first_newline_block(chapter_chunks[0])
     chapter_chunks[1:] = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks[1:]] # Pay attention here to the num of \n (especially for paragraphs
     chapter_chunks[1:] = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks[1:]] # There's also a function for newlines
     chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]

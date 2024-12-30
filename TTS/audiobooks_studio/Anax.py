@@ -117,6 +117,17 @@ def replace_newline_after_quote(input_text):
     """
     return re.sub(r'"\n([A-Z])', r'" \1', input_text)
 
+def fix_punctuation_spacing(text):
+    """
+    Replaces all occurrences of '."' with '".' in the input text.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with corrected punctuation.
+    """
+    return text.replace('."', '".')
 
 ######## End of Clean text
 
@@ -360,6 +371,7 @@ chapter_chunks = [process_chunk_add_new_section(chunk) for chunk in chapter_chun
 chapter_chunks = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks] # There's also a function for newlines
 chapter_chunks = [replace_newline_after_quote(chunk) for chunk in chapter_chunks]
 chapter_chunks = [replace_right_quote_newline(chunk) for chunk in chapter_chunks]
+chapter_chunks = [fix_punctuation_spacing(chunk) for chunk in chapter_chunks]
 
 
 # Process each chunk and generate audio
