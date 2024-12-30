@@ -459,7 +459,7 @@ epub_content = read_epub(file_path)
 # Print a portion of the EPUB content
 # print(epub_content[8000:10000])  # Print the first 1000 characters
 
-ref = 'ralph' # kate_reading, amanda_leigh, ralph, rebecca
+ref = 'ralph' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler
 chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1

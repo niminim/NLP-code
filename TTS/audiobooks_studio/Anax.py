@@ -348,10 +348,10 @@ Almost everyone in the pub joins in when Lucas starts singing Happy Birthday, an
 """
 
 
-ref = 'ella_lynch2' # kate_reading, amanda_leigh, ralph, rebecca,
+ref = 'Mary_Jane_Wells' # kate_reading, amanda_leigh_cobb, ralph, rebecca,
 # helen_keeley, jenna_coleman, ella_lynch, ella_lynch2, billie_brown, kim_bretton, imogen_church, cathleen_mccarron, jessica_ball, perdita_weeks,
 # eleanor_tomlinson, olivia_vinall, fiona_hardingham, gemma_whelan, tuppence_middleton, daisy_edgar_jones, emilia_clarke
-# pippa_bennett_warner, rosie_jones, lydia_wilson
+# pippa_bennett_warner, rosie_jones, lydia_wilson, Mary_Jane_Wells
 
 chunk_size = 350
 audio_format = 'wav'

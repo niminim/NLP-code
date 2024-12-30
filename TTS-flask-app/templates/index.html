@@ -115,18 +115,37 @@
             </select>
         </div>
 
+
         <!-- Narrator Selection -->
-        <div class="form-group">
-            <label for="speaker">Narrator</label>
-            <select name="speaker" id="speaker" disabled>
-                <option value="ralph">Ralph Lister</option>
-                <option value="amanda_leigh">Amanda Leigh</option>
+    <div class="form-group">
+        <label for="speaker">Narrator</label>
+        <select name="speaker" id="speaker" disabled>
+
+            <!-- Male Narrators -->
+            <optgroup label="Male - American">
+                <option value="scott_brick">Scott Brick</option>
+                <option value="michael_page">Michael Page</option>
+                <option value="michael_1_long">Michael Kramer</option>
+                <option value="john_lee2">John Lee</option>
+            </optgroup>
+            <optgroup label="Male - British">
+                <option value="ralph_lister">Ralph Lister</option>
+            </optgroup>
+
+            <!-- Female Narrators -->
+            <optgroup label="Female - American">
                 <option value="kate_reading">Kate Reading</option>
-                <option value="Mary_Jane_Wells">Mary Jane Wells</option>
+                <option value="rebecca_soler">Rebecca Soler</option>
+            </optgroup>
+            <optgroup label="Female - British">
+                <option value="amanda_leigh_cobb">Amanda Leigh Cobb</option>
                 <option value="perdita_weeks">Perdita Weeks</option>
                 <option value="emilia_clarke">Emilia Clarke</option>
-            </select>
-        </div>
+                <option value="Mary_Jane_Wells">Mary Jane Wells</option>
+                <option value="cathleen_mccarron">Cathleen McCarron</option>
+            </optgroup>
+        </select>
+    </div>
 
         <!-- Convert Button -->
         <div class="form-group">
