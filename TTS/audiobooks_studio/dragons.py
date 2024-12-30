@@ -100,10 +100,13 @@ def create_chapters_dict(sorted_chapters, epub_content):
     return chapters_dict
 
 
-def find_chapter_locations2(text, chapters):
+def find_chapter_locations2_full_block(text, chapters):
     """
-    Finds all occurrences of chapter titles in the text where the chapter name is the only content in the line,
-    and returns results as a list of tuples in the format: [('Chapter Name', (start, end))].
+    Finds all occurrences of chapter titles in the text where:
+    - The chapter title is surrounded by blocks of newlines.
+    - Captures the entire block of newlines along with the chapter title.
+
+    Returns results as a list of tuples in the format: [('Chapter Name', (start, end))].
 
     Args:
         text (str): The input text to search.
@@ -115,11 +118,11 @@ def find_chapter_locations2(text, chapters):
     results = []
 
     for chapter in chapters:
-        # Match chapter titles that appear as the only content on the line
-        pattern = rf'^(?<!\S){re.escape(chapter)}(?!\S)$'  # Matches entire line with the chapter title
+        # Pattern to match entire newline block, including the chapter title
+        pattern = rf'(\n+){re.escape(chapter)}(\n{{3,}})'
 
-        # Find all matches with start and end positions
-        matches = [(match.start(), match.end()) for match in re.finditer(pattern, text, re.MULTILINE)]
+        # Find all matches and include entire match (newlines + chapter title)
+        matches = [(match.start(0), match.end(0)) for match in re.finditer(pattern, text)]
 
         # Add chapter name and its positions to the results
         for start, end in matches:
@@ -134,6 +137,7 @@ def get_chapter_text(chapters_dict, chapters, chapter_idx):
     chapter_start = chapter_info['name_start']
     chapter_end = chapter_info['chapter_end']
     chapter_text = epub_content[chapter_start:chapter_end]
+    chapter_text = chapter_text + '.'
     print(chapter_text)
     return chapter_text, chapter_info
 
@@ -244,7 +248,17 @@ def replace_newline_after_quote(input_text):
     """
     return re.sub(r'"\n([A-Z])', r'" \1', input_text)
 
+def fix_punctuation_spacing(text):
+    """
+    Replaces all occurrences of '."' with '".' in the input text.
 
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with corrected punctuation.
+    """
+    return text.replace('."', '".')
 
 # def process_newlines(text): # this was used and worked
 #     """
@@ -445,9 +459,11 @@ chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
+
 base = '/home/nim'
-book_name = 'The_Dragons_of_Krynn_NEW3' + f"_by_{ref_name}_{chunk_size}"
+book_name = 'The_Dragons_of_Krynn_NEW3' + f"_by_{ref}_{chunk_size}"
 book_path = os.path.join(base, book_name)
+
 
 
 # List of chapters to find
@@ -458,7 +474,7 @@ chapters = ['Seven Hymns of the Dragon', 'The Final Touch', 'Night of Falling St
 
 
 # Find all locations of chapter titles
-chapter_locations = find_chapter_locations2(epub_content, chapters)
+chapter_locations = find_chapter_locations2_full_block(epub_content, chapters)
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
@@ -470,7 +486,6 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-
 
 # for chapter_idx in [1,2,3,4,5,6,7,10,11,12,13,14]:
 for chapter_idx in [8]:
@@ -490,6 +505,7 @@ for chapter_idx in [8]:
     chapter_chunks[1:] = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks[1:]] # There's also a function for newlines
     chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
     chapter_chunks[1:] = [replace_right_quote_newline(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks[1:] = [fix_punctuation_spacing(chunk) for chunk in chapter_chunks[1:]]
 
     # Deal with the header
     chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=2)
@@ -500,7 +516,7 @@ for chapter_idx in [8]:
     # tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
     # Process each chunk and generate audio
-    for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter {chapter_idx+1} - Processing chunks")):
+    for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
