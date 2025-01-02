@@ -4,6 +4,7 @@ from tts_model import Basic_TTSModel  # Import Basic_TTSModel for the light mode
 import torch
 import os
 
+
 app = Flask(__name__)
 
 # Initialize Heavier TTSModel

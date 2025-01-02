@@ -1,255 +1,19 @@
-import ebooklib
-from ebooklib import epub
-from bs4 import BeautifulSoup
-import re
-from pydub import AudioSegment
 import os
 import time
-
-
 from tqdm import tqdm
 
 import torch
 from TTS.api import TTS
 
-
-def read_epub(file_path):
-    # Function reads the EPUB content
-    book = epub.read_epub(file_path)
-
-    # To store all the text content from the EPUB
-    all_text = []
-
-    # Iterate over the book items
-    for item in book.get_items():
-        # Only extract the documents that are of type XHTML
-        if item.get_type() == ebooklib.ITEM_DOCUMENT:
-            # Use BeautifulSoup to extract text from the HTML content
-            soup = BeautifulSoup(item.get_content(), 'html.parser')
-            all_text.append(soup.get_text())
-
-    return '\n'.join(all_text)
-
-
-# # Find all occurrences of chapters
-
-def find_chapter_locations_full_block2(text, chapters):
-    """
-    Finds all occurrences of chapter titles in the text where:
-    - The chapter title is surrounded by blocks of newlines.
-    - Captures the entire block of newlines along with the chapter title.
-
-    Returns results as a list of tuples in the format: [('Chapter Name', (start, end))].
-
-    Args:
-        text (str): The input text to search.
-        chapters (list of str): A list of chapter titles to look for.
-
-    Returns:
-        list: A list of tuples where each tuple contains the chapter title and its (start, end) positions.
-    """
-    results = []
-
-    for chapter in chapters:
-        # Pattern to match entire newline block, including the chapter title
-        pattern = rf'(\n+){re.escape(chapter)}(\n{{3,}})'
-
-        # Find all matches and include entire match (newlines + chapter title)
-        matches = [(match.start(0), match.end(0)) for match in re.finditer(pattern, text)]
-
-        # Add chapter name and its positions to the results
-        for start, end in matches:
-            results.append((chapter, (start, end)))
-
-    return results
-
-
-# We need it if chapters are not organized by order
-def get_chapter_text(chapters_dict, chapters, chapter_idx):
-    # the function gets the chapters list and the chapter idx and return the corresponding text
-    chapter_info = chapters_dict[chapters[chapter_idx]]
-    chapter_start = chapter_info['name_start']
-    chapter_end = chapter_info['chapter_end']
-    chapter_text = epub_content[chapter_start:chapter_end]
-    chapter_text = chapter_text + '.'
-    print(chapter_text)
-    return chapter_text, chapter_info
-
-
-
-# Sort chapters by their starting position
-def sort_chapters_by_position(chapter_locations):
-    """
-    Sorts a list of chapter occurrences by their starting positions.
-
-    Args:
-        chapter_locations (list): A list of tuples in the form [('Chapter Name', (start, end)), ...].
-
-    Returns:
-        list: A sorted list of tuples by the starting position.
-    """
-    return sorted(chapter_locations, key=lambda x: x[1][0])
-
-
-def create_chapters_dict(sorted_chapters, epub_content):
-    # the function creates a dictionary with starts and beginings of each chapter
-    chapters_dict = {}
-    for i, chapter_data in enumerate(sorted_chapters):
-        if i < len(sorted_chapters) - 1:
-
-            chapters_dict[chapter_data[0]] = {'name': epub_content[chapter_data[1][0]: chapter_data[1][1]],
-                                              'name_start': chapter_data[1][0],
-                                              'name_end': chapter_data[1][1],
-                                              'chapter_end': sorted_chapters[i + 1][1][0] - 1,
-                                              'length': sorted_chapters[i + 1][1][0] - 1 - chapter_data[1][0]
-                                              }
-        else:
-            chapters_dict[chapter_data[0]] = {'name': epub_content[chapter_data[1][0]: chapter_data[1][1]],
-                                              'name_start': chapter_data[1][0],
-                                              'name_end': chapter_data[1][1],
-                                              'chapter_end': len(epub_content),
-                                              'length':  len(epub_content) - chapter_data[1][0]
-                                              }
-
-    return chapters_dict
-
-
-def efficient_split_text_to_chunks(text, max_length): # this was used and worked
-    """
-    Splits the text into the largest possible chunks based on the assigned maximum length,
-    ensuring each chunk ends at a sentence boundary ('.') when possible.
-    If no '.' is found, splits at the nearest whitespace to avoid breaking words.
-
-    Args:
-        text (str): The input text to split.
-        max_length (int): The maximum length of each chunk.
-
-    Returns:
-        list: A list of text chunks.
-    """
-    chunks = []
-    start = 0
-
-    while start < len(text):
-        # Determine the furthest point for the current chunk
-        end = min(start + max_length, len(text))
-
-        # Look for the last '.' within the allowable range
-        last_dot_index = text.rfind(".", start, end)
-
-        if last_dot_index == -1:  # If no '.' is found in the range
-            # Look for the last whitespace within the range
-            last_space_index = text.rfind(" ", start, end)
-            if last_space_index != -1:  # If a space is found, split at the space
-                last_dot_index = last_space_index
-            else:  # If no space is found, split at the max length
-                last_dot_index = end
-
-        # Add the chunk
-        chunks.append(text[start:last_dot_index].strip())
-        # Update the start to the new position
-        start = last_dot_index + 1
-
-    return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
-
-
-######## Clean text
-
-# To tackles first chpater name followed by a block of \n with no whitespace between the text
-def add_space_after_first_newline_block(text):
-    """
-    Adds a whitespace after the first occurrence of 3 or more newlines in the text.
-
-    Args:
-        text (str): The input text.
-
-    Returns:
-        str: The modified text with a space added after the first block of 3 or more newlines.
-    """
-    # Match the first occurrence of 3 or more newlines
-    pattern = r'(\n{3,})(?! )'
-
-    # Add a space after the newline block
-    modified_text = re.sub(pattern, r'\1 ', text, count=1)
-
-    return modified_text
-
-
-def process_chunk_add_new_section(chunk):
-    """
-    Cleans a single text chunk by applying specific transformations.
-    - Example: Replace sequences of 4+ newlines with 'New section - '.
-    """
-    return re.sub(r'\n{4,}', ' New section - ', chunk)
-
-
-def process_chunk_replace_quotes_newline(input_text):
-    """
-    Replaces instances of '"' followed by '\n' followed by '"' with a single space.
-
-    Args:
-        input_text (str): The input text.
-
-    Returns:
-        str: The text with the pattern replaced by a single space.
-    """
-    return re.sub(r'"\n"', '" "', input_text)
-
-
-def process_chunk_replace_quotes_newlines(input_text):
-    """
-    Replaces instances of '"' followed by one or more '\n' characters followed by '"' with a single space.
-
-    Args:
-        input_text (str): The input text.
-
-    Returns:
-        str: The text with the pattern replaced by a single space.
-    """
-    return re.sub(r'"\n{1,}"', '" "', input_text)
-
-
-def replace_right_quote_newline(input_text):
-    """
-    Replaces instances of '”\n' with a single space.
-
-    Args:
-        input_text (str): The input text.
-
-    Returns:
-        str: The text with the pattern replaced.
-    """
-    return re.sub(r'”\n', ' ', input_text)
-
-
-def replace_newline_after_quote(input_text):
-    """
-    Replaces instances of '"\n' followed by a capital letter with '" '
-    and retains the capital letter.
-
-    Args:
-        input_text (str): The input text.
-
-    Returns:
-        str: The text with the pattern replaced.
-    """
-    return re.sub(r'"\n([A-Z])', r'" \1', input_text)
-
-
-def fix_punctuation_spacing(text):
-    """
-    Replaces all occurrences of '."' with '".' in the input text.
-
-    Args:
-        text (str): The input text.
-
-    Returns:
-        str: The modified text with corrected punctuation.
-    """
-    return text.replace('."', '".')
-
-
-######## End of Clean text
+import sys
+project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS/audiobooks_studio")
+sys.path.append(project_root)
+
+from tools.read_file import *
+from tools.locate_chapters import *
+from tools.split_text import *
+from tools.clean_text import *
+from tools.finalize_files import *
 
 
 ###### Chapter_start
@@ -276,68 +40,7 @@ def convert_latin_numbers_to_words(text):
         text = text.replace(numeral, word)
 
     return text
-
 ###### End of Chapter_start
-
-
-
-######## Finalize files
-def chapter_idx_str(chapter_idx, start_zero):
-    """
-    Returns the formatted chapter number based on the chapter index and starting point,
-    with a '-' appended at the end.
-
-    Args:
-        chapter_idx (int): The chapter index (e.g., 0, 1, 2, etc.).
-        start_zero (bool): If True, chapter numbers start from 0. If False, start from 1.
-
-    Returns:
-        str: The formatted chapter number as a string in the form "00-", "01-", etc.
-    """
-    chapter_number = chapter_idx if start_zero else chapter_idx + 1
-    return f"{chapter_number:02d}-"
-
-
-def concat_wavs_in_folder(folder_path, output_file, format='wav'):
-    """
-    Concatenates all WAV files in a folder in numerical order based on the part number
-    in their filenames and saves them into a single WAV file.
-
-    Args:
-        folder_path (str): Path to the folder containing WAV files.
-        output_file (str): Path to save the combined WAV file.
-
-    Returns:
-        None
-    """
-    # Function to extract the numeric part from the filename
-    def extract_number(file_name):
-        match = re.search(r'part(\d+)', file_name, re.IGNORECASE)
-        return int(match.group(1)) if match else float('inf')  # Place non-matching files at the end
-
-    # List all WAV files in the folder
-    wav_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".wav")]
-
-    # Sort files numerically based on the extracted number
-    sorted_files = sorted(wav_files, key=extract_number)
-
-    # Initialize an empty AudioSegment for concatenation
-    combined = AudioSegment.empty()
-
-    # Concatenate the sorted audio files
-    for file_name in sorted_files:
-        file_path = os.path.join(folder_path, file_name)
-        print(f"Adding {file_name} to the combined audio.")
-        audio = AudioSegment.from_wav(file_path)
-        combined += audio
-
-    # Export the combined audio to the specified output file
-    if format.lower() == 'wav':
-        combined.export(output_file, format="wav")
-    elif format.lower() == 'mp3':
-        combined.export(output_file, format="mp3", bitrate="320")
-    print(f"All WAV files concatenated and saved as '{output_file}'.")
-######## End of Finalize files
 
 
 #############################################################################
@@ -351,7 +54,7 @@ epub_content = read_epub(file_path)
 # Print a portion of the EPUB content
 # print(epub_content[8000:10000])  # Print the first 1000 characters
 
-ref = 'john_lee2' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, michael_page, scott_brick, john_lee2
+ref = 'rebecca_soler' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, michael_page, scott_brick, john_lee2
 chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
@@ -374,16 +77,11 @@ sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 
-# # Print the chapter locations
-# for chapter, locations in chapter_locations.items():
-#     print(f"'{chapter}' found at positions: {locations}")
-
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
 for chapter_idx in [0]:
-    chapter_text, chapter_info = get_chapter_text(chapters_dict, chapters, chapter_idx)
+    chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
     chapter_folder =  os.path.join(book_path, chapter_name_adj)
@@ -402,9 +100,6 @@ for chapter_idx in [0]:
     if chapter_idx != 0 and chapter_idx != len(chapters)-3 and chapter_idx != len(chapters)-1: # last is used only as a stop point
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
-
-    # device = "cuda" if torch.cuda.is_available() else "cpu"
-    # tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):

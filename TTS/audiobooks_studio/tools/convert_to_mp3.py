@@ -1,11 +1,4 @@
 import os
-
-def add(a,b):
-
-    return a + b
-
-
-import os
 from pydub import AudioSegment
 
 
@@ -36,8 +29,8 @@ def convert_wav_to_mp3(wav_file, output_file, bitrate="320k"):
 # output_file= '/home/nim/The_Dragons_of_Krynn_NEW_by_ralph_350/09-Scourge_of_the_Wicked_Kendragon.mp3'  # Desired output MP3 file name
 # convert_wav_to_mp3(wav_file, output_file)
 
-base_folder = '/home/nim/Baroness_of_Blood_by_ralph_350'
-dest_folder = os.path.join(base_folder, 'MP3')
+base_folder = '/home/nim/Baroness_of_Blood_by_ralph_350' # the base book folder
+dest_folder = os.path.join(base_folder, 'MP3') # where we'd like to put the mp3 files
 os.makedirs(dest_folder, exist_ok=True)
 
 files = os.listdir(base_folder)
