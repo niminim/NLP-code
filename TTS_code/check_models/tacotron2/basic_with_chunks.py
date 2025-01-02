@@ -1,16 +1,16 @@
-from TTS.api import TTS
+from TTS_code.api import TTS
 import soundfile as sf
 import numpy as np
 import torch
 
 import sys
 import os
-project_root = os.path.abspath("/TTS")
+project_root = os.path.abspath("/TTS_code")
 sys.path.append(project_root)
 from texts import *
 
 
-# Initialize TTS model from Hugging Face Hub
+# Initialize TTS_code model from Hugging Face Hub
 model_name = "tts_models/en/ljspeech/tacotron2-DDC"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -53,14 +53,14 @@ combined_audio = np.concatenate(audio_arrays)
 
 # Save the combined audio to a single WAV file
 output_filename = 'GR_book_concat_chunks.wav'
-sf.write(f"//home/nim/venv/NLP-code/TTS/{output_filename}", combined_audio, samplerate=22050)
+sf.write(f"/TTS_code/{output_filename}", combined_audio, samplerate=22050)
 print(f"Audio saved as {output_filename}")
 
 
 # Save the each audio array to a single WAV file
 for idx, audio_arr in enumerate(audio_arrays):
     output_filename = f"output_audio_chunk_{idx + 1}.wav"
-    sf.write(f"//home/nim/venv/NLP-code/TTS/{output_filename}", audio_arr, samplerate=22050)
+    sf.write(f"/TTS_code/{output_filename}", audio_arr, samplerate=22050)
 
 
 for idx, txt in enumerate(text_chunks):
@@ -72,14 +72,14 @@ for idx, aud in enumerate(audio_arrays):
 
 
 #############
-# Process each chunk with TTS and save to separate audio files
+# Process each chunk with TTS_code and save to separate audio files
 # for idx, chunk in enumerate(text_chunks):
 #     # Generate speech audio for each chunk
 #     audio = tts.tts(chunk)
 #
 #     # Save each chunk to a separate WAV file
 #     output_filename = f"output_audio_chunk_{idx + 1}.wav"
-#     sf.write(f"//home/nim/venv/NLP-code/TTS/{output_filename}", audio, samplerate=22050)
+#     sf.write(f"//home/nim/venv/NLP-code/TTS_code/{output_filename}", audio, samplerate=22050)
 #     print(f"Audio generated and saved as '{output_filename}' for chunk {idx + 1}.")
 #############
 

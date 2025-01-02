@@ -83,7 +83,7 @@ def replace_newline_after_quote(input_text):
     return re.sub(r'"\n([A-Z])', r'" \1', input_text)
 
 
-def fix_punctuation_spacing(text):
+def fix_punctuation_with_qoute(text):
     """
     Replaces:
     - All occurrences of '."' with '".' in the input text.
@@ -101,37 +101,5 @@ def fix_punctuation_spacing(text):
     text = text.replace(',"', '",')
     return text
 
-# def process_newlines(text): # this was used and worked
-#     """
-#     Replaces any occurrence of '\n' (single or multiple) with a single space.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with all '\n' sequences replaced by a single space.
-#     """
-#     # Replace any sequence of \n (one or more) with a single space
-#     return re.sub(r'\n+', ' ', text)
-
-
-# def process_newlines(text):
-#     """
-#     Replaces sequences of multiple '\n' with ' \n ' (a space, a newline, and another space),
-#     and ensures single '\n' is surrounded by exactly one space, but avoids adding redundant spaces.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with '\n' properly normalized.
-#     """
-#     # Replace multiple \n with ' \n '
-#     text = re.sub(r'\n{2,}', ' \n ', text)
-#
-#     # Ensure a single \n is surrounded by a single space, avoiding duplicate spaces
-#     text = re.sub(r' ?\n ?', ' \n ', text)
-#
-#     return text
 
 ######## End of Clean text

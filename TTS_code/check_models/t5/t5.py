@@ -2,7 +2,7 @@ from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech
 
 import sys
 import os
-project_root = os.path.abspath("/TTS")
+project_root = os.path.abspath("/TTS_code")
 sys.path.append(project_root)
 from texts import *
 
@@ -34,6 +34,6 @@ speech = model.generate_speech(inputs["input_ids"], speaker_embeddings, vocoder=
 
 import soundfile as sf
 filename = 'GR_book_t5'
-sf.write(f"//home/nim/venv/NLP-code/TTS/{filename}.wav", speech, samplerate=22050)
+sf.write(f"/TTS_code/{filename}.wav", speech, samplerate=22050)
 print(f"Audio generated and saved as {filename}.wav'")
 

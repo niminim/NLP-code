@@ -1,4 +1,4 @@
-from TTS.api import TTS
+from TTS_code.api import TTS
 from transformers import BarkModel, BarkProcessor
 
 import soundfile as sf
@@ -8,7 +8,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 model_name = 'xtts_v2'
 
-# List available 🐸TTS models
+# List available 🐸TTS_code models
 
 def build_model(model_name, device):
     print(TTS().list_models())
@@ -36,7 +36,7 @@ wav = tts.tts(text=chunk, speaker_wav="/home/nim/Documents/kate_1_2_much_longer.
 
 
 ####################################
-from TTS.api import TTS
+from TTS_code.api import TTS
 from transformers import BarkModel, BarkProcessor
 
 import soundfile as sf
@@ -53,7 +53,7 @@ import high-quality, low-cost athletic shoes from Japan.
 
 tts_model = TTS("tts_models/en/ljspeech/tacotron2-DDC").to(device)
 wav = tts_model.tts(text=text)
-# tts_model = TTS( "tts_models/en/ljspeech/vits").to(device)
+# tts_model = TTS_code( "tts_models/en/ljspeech/vits").to(device)
 tts_model = TTS( "tts_models/en/ljspeech/glow-tts").to(device)
 wav = tts_model.tts(text=text)
 tts_model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
@@ -69,7 +69,7 @@ print(f"Audio generated and saved as {filename}.wav'")
 # Bark is not that good in 0.25.1, also switches male and female
 # # Load the model to GPU
 # # Bark is really slow on CPU, so we recommend using GPU.
-# tts = TTS("tts_models/multilingual/multi-dataset/bark").to("cuda")
+# tts = TTS_code("tts_models/multilingual/multi-dataset/bark").to("cuda")
 # # random speaker
 # tts.tts_to_file(text, file_path="/home/nim/try_bark.wav")
 
@@ -80,7 +80,7 @@ from huggingface_hub import HfApi
 # Initialize the API
 api = HfApi()
 
-# Search for models related to TTS
+# Search for models related to TTS_code
 models = api.list_models(filter="text-to-speech")
 for model in models:
     print(model.modelId)

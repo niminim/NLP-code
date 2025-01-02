@@ -1,4 +1,4 @@
-from TTS.api import TTS
+from TTS_code.api import TTS
 import soundfile as sf
 import numpy as np
 from scipy.signal import resample
@@ -6,12 +6,12 @@ import torch
 
 import sys
 import os
-project_root = os.path.abspath("/TTS")
+project_root = os.path.abspath("/TTS_code")
 sys.path.append(project_root)
 from texts import *
 
 
-# Initialize TTS model
+# Initialize TTS_code model
 model_name = "tts_models/en/ljspeech/tacotron2-DDC"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS(model_name).to(device)
@@ -52,5 +52,5 @@ combined_audio = np.concatenate([np.concatenate([a, silence]) for a in audio_arr
 
 # Save combined audio
 output_filename = 'GR_book_concat_chunks.wav'
-sf.write(f"/home/nim/venv/NLP-code/TTS/{output_filename}", combined_audio, samplerate=22050)
+sf.write(f"/TTS_code/{output_filename}", combined_audio, samplerate=22050)
 print(f"Audio saved as {output_filename}")

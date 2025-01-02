@@ -4,7 +4,7 @@ from gtts import gTTS
 class Basic_TTSModel:
     def __init__(self):
         """
-        Initialize the TTS model.
+        Initialize the TTS_code model.
         You can load a pre-trained model here if required.
         """
         pass
@@ -32,22 +32,22 @@ class Basic_TTSModel:
         tts.save(output_path)
 
 
-from TTS.api import TTS
+from TTS_code.api import TTS
 import torch
 
 class TTSModel:
     def __init__(self):
         """
-        Initialize the TTS model with the desired pre-trained TTS model and device.
+        Initialize the TTS_code model with the desired pre-trained TTS_code model and device.
         """
         # Get device (CUDA if available, else CPU)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        # Initialize the TTS model
+        # Initialize the TTS_code model
         self.tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(self.device)
 
     def generate_audio(self, text, output_path, speaker_wav="/home/nim/Documents/ralph.wav"):
         """
-        Generate speech audio from text using the TTS library.
+        Generate speech audio from text using the TTS_code library.
 
         :param text: Input text to be converted to speech.
         :param output_path: File path to save the generated audio.

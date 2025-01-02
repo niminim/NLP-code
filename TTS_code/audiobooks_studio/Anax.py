@@ -5,7 +5,7 @@ import torch
 from TTS.api import TTS
 
 import sys
-project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS/audiobooks_studio")
+project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
 
 from tools.split_text import *
@@ -210,7 +210,7 @@ chapter_chunks = [process_chunk_add_new_section(chunk) for chunk in chapter_chun
 chapter_chunks = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks] # There's also a function for newlines
 chapter_chunks = [replace_newline_after_quote(chunk) for chunk in chapter_chunks]
 chapter_chunks = [replace_right_quote_newline(chunk) for chunk in chapter_chunks]
-chapter_chunks = [fix_punctuation_spacing(chunk) for chunk in chapter_chunks]
+chapter_chunks = [fix_punctuation_with_qoute(chunk) for chunk in chapter_chunks]
 
 
 # Process each chunk and generate audio

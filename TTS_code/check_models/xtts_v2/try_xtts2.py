@@ -1,14 +1,14 @@
 # https://docs.coqui.ai/en/latest/inference.html
 
 import torch
-from TTS.api import TTS
+from TTS_code.api import TTS
 
 import sys
 import os
-project_root = os.path.abspath("/TTS")
+project_root = os.path.abspath("/TTS_code")
 sys.path.append(project_root)
 
-sys.path.append("/TTS")
+sys.path.append("/TTS_code")
 sys.path.append(project_root)
 from texts import *
 print(sys.path)
@@ -17,10 +17,10 @@ print(sys.path)
 # Get device
 device = "cuda" if torch.cuda.is_available() else "cpu"
 # device = "cpu"
-# Init TTS
+# Init TTS_code
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-# Run TTS
+# Run TTS_code
 # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
 # Text to speech list of amplitude values as output
 # wav = tts.tts(text="Hello world!", speaker_wav="/home/nim/Documents/kate_1_7.wav", language="en")

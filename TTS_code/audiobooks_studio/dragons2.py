@@ -6,13 +6,14 @@ import torch
 from TTS.api import TTS
 
 import sys
-project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS/audiobooks_studio")
+project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
 
 from tools.read_file import *
 from tools.locate_chapters import *
 from tools.split_text import *
 from tools.clean_text import *
+from tools.clean_text2 import *
 from tools.finalize_files import *
 
 
@@ -115,14 +116,14 @@ epub_content = read_epub(file_path)
 # Print a portion of the EPUB content
 # print(epub_content[8000:10000])  # Print the first 1000 characters
 
-ref = 'ralph' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler
+ref = 'ralph_lister' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler
 chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 
 base = '/home/nim'
-book_name = 'The_Dragons_of_Krynn_NEW3' + f"_by_{ref}_{chunk_size}"
+book_name = 'The_Dragons_of_Krynn_NEW4' + f"_by_{ref}_{chunk_size}"
 book_path = os.path.join(base, book_name)
 
 
@@ -163,10 +164,9 @@ for chapter_idx in [8]:
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks[0] = add_space_after_first_newline_block(chapter_chunks[0])
     chapter_chunks[1:] = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks[1:]] # Pay attention here to the num of \n (especially for paragraphs
-    chapter_chunks[1:] = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks[1:]] # There's also a function for newlines
-    chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
-    chapter_chunks[1:] = [replace_right_quote_newline(chunk) for chunk in chapter_chunks[1:]]
-    chapter_chunks[1:] = [fix_punctuation_spacing(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks = [combined_text_processor(chunk) for chunk in chapter_chunks] # Pay attention here to the num of \n (especially for paragraphs
+
+
 
     # Deal with the header
     chapter_chunks[0] = keep_n_sequences(chapter_chunks[0], n=2)
@@ -179,8 +179,8 @@ for chapter_idx in [8]:
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        if idx == 38:
-            break
+        # if idx == 38:
+        #     break
 
 
     # # Concat parts to assemble the chapter
@@ -190,5 +190,3 @@ for chapter_idx in [8]:
 
     # Sleep for 20 seconds
     time.sleep(20)
-
-    ### IT STILL RUNS IN NEW 3  !!!!

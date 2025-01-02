@@ -9,12 +9,12 @@ audio_path = "/home/nim/output_dune_by_longer_kate.wav"  # Replace with your fil
 
 ########### 2. Objective Metrics
 
-### Short-Time Objective Intelligibility (STOI): Evaluate the intelligibility of your TTS output.
+### Short-Time Objective Intelligibility (STOI): Evaluate the intelligibility of your TTS_code output.
 
 # The Short-Time Objective Intelligibility (STOI) metric is widely used to evaluate the intelligibility
 # of speech signals. It measures how well a degraded or synthesized signal matches the original reference speech
 # in terms of intelligibility.
-#Here’s how you can evaluate your TTS output using STOI:
+#Here’s how you can evaluate your TTS_code output using STOI:
 
 from pystoi.stoi import stoi
 import librosa
@@ -23,8 +23,8 @@ import librosa
 ref_path = "reference_audio.wav"  # Replace with your reference file path
 ref_signal, sr_ref = librosa.load(ref_path, sr=16000)  # Convert to 16 kHz if not already
 
-# Load the TTS-generated audio
-deg_path = "tts_audio.wav"  # Replace with your TTS file path
+# Load the TTS_code-generated audio
+deg_path = "tts_audio.wav"  # Replace with your TTS_code file path
 deg_signal, sr_deg = librosa.load(deg_path, sr=16000)  # Ensure the sampling rate matches
 
 # Ensure both signals have the same duration
@@ -40,7 +40,7 @@ stoi_score = stoi(ref_signal, deg_signal, sr_ref, extended=False)  # Use 'extend
 print(f"STOI Score: {stoi_score:.3f}")
 
 ## Batch Processing for Multiple Files
-# If you have a dataset of TTS audio and reference files, you can automate the STOI evaluation:
+# If you have a dataset of TTS_code audio and reference files, you can automate the STOI evaluation:
 
 import os
 
@@ -70,7 +70,7 @@ for ref_file, tts_file in zip(sorted(os.listdir(reference_folder)), sorted(os.li
 
 # Display results
 for ref, tts, score in scores:
-    print(f"Reference: {ref}, TTS: {tts}, STOI Score: {score:.3f}")
+    print(f"Reference: {ref}, TTS_code: {tts}, STOI Score: {score:.3f}")
 
 ## Interpret the Results:
 # STOI Score ≥ 0.9: Excellent intelligibility.
@@ -79,7 +79,7 @@ for ref, tts, score in scores:
 
 ## Key Considerations
 # Sampling Rate: STOI assumes the signals are sampled at 16 kHz. If your audio files are at a different sampling rate, resample them using librosa.resample().
-# Signal Length: Ensure both the reference and TTS audio files are of the same duration.
+# Signal Length: Ensure both the reference and TTS_code audio files are of the same duration.
 # Use Extended STOI: For more challenging scenarios (e.g., noisy environments), use extended=True.
 #### End of STOI
 
@@ -275,7 +275,7 @@ plt.ylabel("Frequency (Hz)")
 plt.show()
 
 ## Inspect Frequency Range
-# TTS systems should produce audio with a smooth distribution of frequencies. Key points to observe:
+# TTS_code systems should produce audio with a smooth distribution of frequencies. Key points to observe:
 #
 # Low Frequencies (50-300 Hz): These correspond to the fundamental frequencies (pitch).
 # Mid Frequencies (300-3000 Hz): Critical for speech intelligibility.
@@ -332,11 +332,11 @@ D_ref = librosa.amplitude_to_db(np.abs(librosa.stft(y_ref)), ref=np.max)
 # Plot the comparison
 plt.figure(figsize=(12, 6))
 
-# TTS Spectrogram
+# TTS_code Spectrogram
 plt.subplot(2, 1, 1)
 librosa.display.specshow(D, sr=sr, x_axis="time", y_axis="log", cmap="viridis")
 plt.colorbar(format="%+2.0f dB")
-plt.title("TTS Audio Spectrogram")
+plt.title("TTS_code Audio Spectrogram")
 
 # Reference Spectrogram
 plt.subplot(2, 1, 2)

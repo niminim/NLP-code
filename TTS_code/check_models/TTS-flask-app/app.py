@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-from TTS.api import TTS
+from TTS_code.api import TTS
 from tts_model import Basic_TTSModel  # Import Basic_TTSModel for the light model
 import torch
 import os
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 ###################################### Split, but with no semicolon
 # from flask import Flask, request, jsonify, render_template, send_file
 # import re
-# from TTS.api import TTS
+# from TTS_code.api import TTS_code
 # from pydub import AudioSegment
 # import os
 # import torch
@@ -89,13 +89,14 @@ if __name__ == "__main__":
 #     replace_right_quote_newline,
 #     process_chunk_replace_quotes_newlines,
 #     replace_newline_after_quote,
+#     fix_punctuation_with_qoute,
 # )
 #
 # app = Flask(__name__)
 #
-# # Initialize TTS models
-# light_tts = TTS("tts_models/en/ljspeech/tacotron2-DDC")  # Single-speaker model
-# heavier_tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(
+# # Initialize TTS_code models
+# light_tts = TTS_code("tts_models/en/ljspeech/tacotron2-DDC")  # Single-speaker model
+# heavier_tts = TTS_code("tts_models/multilingual/multi-dataset/xtts_v2").to(
 #     "cuda" if torch.cuda.is_available() else "cpu"
 # )
 #
@@ -110,6 +111,7 @@ if __name__ == "__main__":
 #     text = replace_right_quote_newline(text)
 #     text = process_chunk_replace_quotes_newlines(text)
 #     text = replace_newline_after_quote(text)
+#     text = fix_punctuation_with_qoute(text)
 #     return text
 #
 # # Function to split text into sentences
@@ -131,7 +133,7 @@ if __name__ == "__main__":
 #         print(f"Processing sentence {i + 1}/{len(sentences)}: {sentence}")
 #         temp_output = f"temp_output_{i}.wav"
 #
-#         # Generate TTS for each sentence
+#         # Generate TTS_code for each sentence
 #         tts_model.tts_to_file(
 #             text=sentence,
 #             speaker_wav=speaker_wav,  # Optional for speaker reference

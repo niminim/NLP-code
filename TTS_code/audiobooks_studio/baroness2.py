@@ -6,13 +6,14 @@ import torch
 from TTS.api import TTS
 
 import sys
-project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS/audiobooks_studio")
+project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
 
 from tools.read_file import *
 from tools.locate_chapters import *
 from tools.split_text import *
 from tools.clean_text import *
+from tools.clean_text2 import *
 from tools.finalize_files import *
 
 
@@ -54,13 +55,13 @@ epub_content = read_epub(file_path)
 # Print a portion of the EPUB content
 # print(epub_content[8000:10000])  # Print the first 1000 characters
 
-ref = 'rebecca_soler' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, michael_page, scott_brick, john_lee2
+ref = 'ralph_lister' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, michael_page, scott_brick, john_lee2
 chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'Baroness_of_Blood' + f"_by_{ref}_{chunk_size}"
+book_name = 'Baroness_of_Blood2' + f"_by_{ref}_{chunk_size}"
 book_path = os.path.join(base, book_name)
 
 
@@ -80,7 +81,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [0]:
+for chapter_idx in [2]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
@@ -91,10 +92,7 @@ for chapter_idx in [0]:
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
     chapter_chunks[0] = add_space_after_first_newline_block(chapter_chunks[0])
     chapter_chunks[1:] = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks[1:]] # Pay attention here to the num of \n (especially for paragraphs
-    chapter_chunks[1:] = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks[1:]] # There's also a function for newlines
-    chapter_chunks[1:] = [replace_newline_after_quote(chunk) for chunk in chapter_chunks[1:]]
-    chapter_chunks[1:] = [replace_right_quote_newline(chunk) for chunk in chapter_chunks[1:]]
-    chapter_chunks[1:] = [fix_punctuation_spacing(chunk) for chunk in chapter_chunks[1:]]
+    chapter_chunks = [combined_text_processor(chunk) for chunk in chapter_chunks] # Pay attention here to the num of \n (especially for paragraphs
 
 
     if chapter_idx != 0 and chapter_idx != len(chapters)-3 and chapter_idx != len(chapters)-1: # last is used only as a stop point
