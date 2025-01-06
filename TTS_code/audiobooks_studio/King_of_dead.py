@@ -81,14 +81,16 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [0]:
+for chapter_idx in [11,12,13,14,15]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
     chapter_folder =  os.path.join(book_path, chapter_name_adj)
     os.makedirs(chapter_folder, exist_ok=True)
 
-    chapter_text = add_space_after_nth_newline_block(chapter_text, 2)
+    processed_substring = remove_first_newline_block(chapter_text[:50])
+    chapter_text = processed_substring + chapter_text[50:]
+    chapter_text = add_space_after_nth_newline_block(chapter_text, 1) # Pay attention here
     processed_substring = process_chunk_add_new_section(chapter_text[100:])
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
@@ -97,14 +99,13 @@ for chapter_idx in [0]:
     if chapter_idx != 0 : #
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
-
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        # if idx == 8:
+        # if idx == 2:
         #     break
 
     # Concat parts to assemble the chapter
@@ -114,6 +115,6 @@ for chapter_idx in [0]:
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
     # Sleep for 15 seconds
-    time.sleep(5)
+    time.sleep(15)
 
 ####

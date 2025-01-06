@@ -15,6 +15,24 @@ from TTS.api import TTS
 # c_1 = 'Reading, writing, even contemplative thought seemed beyond her reach. But she was a practical and caring woman, and Ilsabet ignored the shortcomings. “No,” she replied. “I just couldn’t sleep.”\nInstead, Ilsabet had gone to Lord Jorani’s chambers in the highest room in the castle tower'
 #
 
+def remove_first_newline_block(text):
+    """
+    Removes the first block of consecutive newline characters from the text.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with the first block of newlines removed.
+    """
+    # Define the pattern: one or more consecutive newline characters
+    pattern = r'\n+'
+
+    # Remove the first occurrence of the pattern
+    modified_text = re.sub(pattern, '', text, count=1)
+
+    return modified_text
+
 def add_space_after_nth_newline_block(text, n, min_newlines=3):
     """
     Adds a space after the nth occurrence of a block of consecutive newlines
