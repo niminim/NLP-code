@@ -81,19 +81,18 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [2]:
+for chapter_idx in [0,1,2]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
     chapter_folder =  os.path.join(book_path, chapter_name_adj)
     os.makedirs(chapter_folder, exist_ok=True)
 
-
+    chapter_text = add_space_after_nth_newline_block(chapter_text, 2)
+    processed_substring = process_chunk_add_new_section(chapter_text[100:])
+    chapter_text = chapter_text[:100] + processed_substring
+    chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
     chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
-    chapter_chunks[0] = add_space_after_first_newline_block(chapter_chunks[0])
-    chapter_chunks[1:] = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks[1:]] # Pay attention here to the num of \n (especially for paragraphs
-    chapter_chunks = [combined_text_processor(chunk) for chunk in chapter_chunks] # Pay attention here to the num of \n (especially for paragraphs
-
 
     if chapter_idx != 0 and chapter_idx != len(chapters)-3 and chapter_idx != len(chapters)-1: # last is used only as a stop point
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
