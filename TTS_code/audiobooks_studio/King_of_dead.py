@@ -69,7 +69,7 @@ book_path = os.path.join(base, book_name)
 chapters = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
             'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three',
             'Twenty-four', 'Twenty-five', 'Twenty-six',
-            'Back Cover', 'About the Author'] # Parts appears at the end! only used as a stop point
+            'Back Cover'] # Parts appears at the end! only used as a stop point
 
 
 # Find all locations of chapter titles
@@ -81,7 +81,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [11,12,13,14,15]:
+for chapter_idx in [26]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
@@ -115,6 +115,6 @@ for chapter_idx in [11,12,13,14,15]:
     concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
     # Sleep for 15 seconds
-    time.sleep(15)
+    time.sleep(5)
 
 ####

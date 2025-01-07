@@ -69,4 +69,12 @@ text = '\n\n\n\n\n\n\n\nPart One - The Legacy of Baron Janosk'
 text = '\n\n\n\n\n\n\n\nPart Two - The Dance of Death'
 text = '\n\n\n\n\n\n\n\nPart Three - The Judgment of th Fates'
 
-tts.tts_to_file(text=text, speaker_wav="/home/nim/Documents/ralph.wav", language="en", file_path="/home/nim/Part_Three-The_Judgment_of_Fates.wav")
+text1 = '\n\n\n\n\n\n\n\nPart One - Darkon'
+text2 = '\n\n\n\n\n\n\n\nPart Two - Oerth'
+text3 = '\n\n\n\n\n\n\n\nPart Three - Barovia'
+text4 = '\n\n\n\n\n\n\n\nPart Four - Darkon'
+folder = '/home/nim/King_of_the_Dead_by_scott_brick_350'
+tts.tts_to_file(text=text1, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/01_0-Part_One-Darkon.wav")
+tts.tts_to_file(text=text2, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/07_0-Part_Two-Oerth.wav")
+tts.tts_to_file(text=text3, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/18_0-Part_Three-Barovia.wav")
+tts.tts_to_file(text=text4, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/22_0-Part_Four-Darkon.wav")

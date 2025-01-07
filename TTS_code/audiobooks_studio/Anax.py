@@ -10,6 +10,7 @@ sys.path.append(project_root)
 
 from tools.split_text import *
 from tools.clean_text import *
+from tools.clean_text2 import *
 from tools.finalize_files import *
 
 
@@ -187,10 +188,13 @@ Almost everyone in the pub joins in when Lucas starts singing Happy Birthday, an
 """
 
 
-ref = 'sophie_aldred' # kate_reading, amanda_leigh_cobb, ralph, rebecca,
+ref = 'saskia_maarleveld' # kate_reading, amanda_leigh_cobb,
 # helen_keeley, jenna_coleman, ella_lynch, ella_lynch2, billie_brown, kim_bretton, imogen_church, cathleen_mccarron, jessica_ball, perdita_weeks,
 # eleanor_tomlinson, olivia_vinall, fiona_hardingham, gemma_whelan, tuppence_middleton, daisy_edgar_jones, emilia_clarke
 # pippa_bennett_warner, rosie_jones, lydia_wilson, Mary_Jane_Wells, suzy_jackson, julia_whelan,
+
+# julia_whelan, saskia_maarleveld, saskia_maarleveld2, paige_layle, erin_moon, mae_whitman, amanda_ronconi, molly_secours
+# emily_woo_zeller2, emily_woo_zeller3
 
 chunk_size = 350
 audio_format = 'wav'
@@ -204,13 +208,8 @@ name = "Anax"
 chapter_folder = os.path.join(base, name)
 os.makedirs(chapter_folder, exist_ok=True)
 
-
-chapter_chunks = efficient_split_text_to_chunks(text_full, max_length=chunk_size)
-chapter_chunks = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks] # Pay attention here to the num of \n (especially for paragraphs
-chapter_chunks = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks] # There's also a function for newlines
-chapter_chunks = [replace_newline_after_quote(chunk) for chunk in chapter_chunks]
-chapter_chunks = [replace_right_quote_newline(chunk) for chunk in chapter_chunks]
-chapter_chunks = [fix_punctuation_with_qoute(chunk) for chunk in chapter_chunks]
+chapter_text = process_text(text_full)  # pay attention to paragraphs newlines (currently supports one and two)
+chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
 
 
 # Process each chunk and generate audio
