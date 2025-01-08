@@ -7,9 +7,9 @@ from TTS.api import TTS
 import sys
 project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
-
 from tools.split_text import *
 from tools.clean_text import *
+from tools.clean_text2 import *
 from tools.finalize_files import *
 
 #############################################################################
@@ -85,7 +85,7 @@ Someone inside the van turned down the music. "Cody! Call me after you settle in
 """
 
 
-ref = 'rebecca_soler' # kate_reading, amanda_leigh, ralph_lister, rebecca_soler
+ref = 'paige_layle' # kate_reading, amanda_leigh, ralph_lister, rebecca_soler
 chunk_size = 350
 audio_format = 'wav'
 
@@ -99,12 +99,8 @@ chapter_folder = os.path.join(base, name)
 os.makedirs(chapter_folder, exist_ok=True)
 
 
-chapter_chunks = efficient_split_text_to_chunks(text, max_length=chunk_size)
-chapter_chunks = [process_chunk_add_new_section(chunk) for chunk in chapter_chunks] # Pay attention here to the num of \n (especially for paragraphs
-chapter_chunks = [process_chunk_replace_quotes_newline(chunk) for chunk in chapter_chunks] # There's also a function for newlines
-chapter_chunks = [replace_newline_after_quote(chunk) for chunk in chapter_chunks]
-chapter_chunks = [replace_right_quote_newline(chunk) for chunk in chapter_chunks]
-chapter_chunks = [fix_punctuation_with_qoute(chunk) for chunk in chapter_chunks]
+chapter_text = process_text(text)  # pay attention to paragraphs newlines (currently supports one and two)
+chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
 
 
 # Process each chunk and generate audio

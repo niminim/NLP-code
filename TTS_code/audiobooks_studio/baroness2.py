@@ -15,33 +15,9 @@ from tools.split_text import *
 from tools.clean_text import *
 from tools.clean_text2 import *
 from tools.finalize_files import *
-
-
-###### Chapter_start
-def convert_latin_numbers_to_words(text):
-    """
-    Converts Latin numerals (I. to X.) into their word equivalents followed by '-'.
-    Does nothing for Latin numerals without a '.'.
-
-    Args:
-        text (str): Input text containing Latin numerals.
-
-    Returns:
-        str: Text with Latin numerals followed by '.' replaced by words followed by '-'.
-    """
-    # Mapping of Latin numerals (with '.') to their word equivalents
-    latin_to_words = {
-        '\nI.': ' One -', '\nII.': ' Two -', '\nIII.': ' Three -', '\nIV.': ' Four -',
-        '\nV.': ' Five -', '\nVI.': ' Six -', '\nVII.': ' Seven -', '\nVIII.': ' Eight -',
-        '\nIX.': ' Nine -', '\nX.': ' Ten -'
-    }
-
-    # Replace numerals followed by '.' with their word equivalents
-    for numeral, word in latin_to_words.items():
-        text = text.replace(numeral, word)
-
-    return text
-###### End of Chapter_start
+from tools.text_tools import *
+from tools.path_tools import *
+from tools.general_tools import *
 
 
 #############################################################################
@@ -51,18 +27,14 @@ def convert_latin_numbers_to_words(text):
 file_path = '/home/nim/Downloads/Baroness_of_Blood.epub'
 epub_content = read_epub(file_path)
 
-
-# Print a portion of the EPUB content
-# print(epub_content[8000:10000])  # Print the first 1000 characters
-
 ref = 'ralph_lister' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, michael_page, scott_brick, john_lee2
 chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'Baroness_of_Blood2' + f"_by_{ref}_{chunk_size}"
-book_path = os.path.join(base, book_name)
+book_name = 'Baroness_of_Blood2'
+book_path, texts_folder = create_dirs(base, book_name, ref, chunk_size)
 
 
 # List of chapters to find
@@ -81,13 +53,15 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [0,1,2]:
+for chapter_idx in [0]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
     chapter_folder =  os.path.join(book_path, chapter_name_adj)
     os.makedirs(chapter_folder, exist_ok=True)
 
+    processed_substring = remove_first_newline_block(chapter_text[:50])
+    chapter_text = processed_substring + chapter_text[50:]
     chapter_text = add_space_after_nth_newline_block(chapter_text, 2)
     processed_substring = process_chunk_add_new_section(chapter_text[100:])
     chapter_text = chapter_text[:100] + processed_substring
@@ -100,6 +74,8 @@ for chapter_idx in [0,1,2]:
 
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
+
+        save_text_chunk(texts_folder, chapter_name_adj, chunk, idx)
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)

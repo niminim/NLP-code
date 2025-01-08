@@ -15,45 +15,19 @@ from tools.split_text import *
 from tools.clean_text import *
 from tools.clean_text2 import *
 from tools.finalize_files import *
+from tools.text_tools import *
+from tools.path_tools import *
+from tools.path_tools import *
+from tools.general_tools import *
 
-
-###### Chapter_start
-def convert_latin_numbers_to_words(text):
-    """
-    Converts Latin numerals (I. to X.) into their word equivalents followed by '-'.
-    Does nothing for Latin numerals without a '.'.
-
-    Args:
-        text (str): Input text containing Latin numerals.
-
-    Returns:
-        str: Text with Latin numerals followed by '.' replaced by words followed by '-'.
-    """
-    # Mapping of Latin numerals (with '.') to their word equivalents
-    latin_to_words = {
-        '\nI.': ' One -', '\nII.': ' Two -', '\nIII.': ' Three -', '\nIV.': ' Four -',
-        '\nV.': ' Five -', '\nVI.': ' Six -', '\nVII.': ' Seven -', '\nVIII.': ' Eight -',
-        '\nIX.': ' Nine -', '\nX.': ' Ten -'
-    }
-
-    # Replace numerals followed by '.' with their word equivalents
-    for numeral, word in latin_to_words.items():
-        text = text.replace(numeral, word)
-
-    return text
-###### End of Chapter_start
 
 
 #############################################################################
-
 
 # Path to your EPUB file
 file_path = '/home/nim/Downloads/King_of_the_Dead.epub'
 epub_content = read_epub(file_path)
 
-
-# Print a portion of the EPUB content
-# print(epub_content[8000:10000])  # Print the first 1000 characters
 
 ref = 'scott_brick' # ralph_lister,  scott_brick, john_lee2
 chunk_size = 350
@@ -61,8 +35,8 @@ audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'King_of_the_Dead' + f"_by_{ref}_{chunk_size}"
-book_path = os.path.join(base, book_name)
+book_name = 'King_of_the_Dead'
+book_path, texts_folder = create_dirs(base, book_name, ref, chunk_size)
 
 
 # List of chapters to find
@@ -101,6 +75,8 @@ for chapter_idx in [26]:
 
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
+        save_text_chunk(texts_folder, chapter_name_adj, chunk, idx)
+
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
