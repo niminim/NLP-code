@@ -28,7 +28,6 @@ file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
 epub_content = read_epub(file_path)
 
 
-
 ref = 'ralph_lister' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler
 chunk_size = 350
 audio_format = 'wav'
@@ -37,7 +36,7 @@ start_zero = True # True if we have a prologue (or something else), False if we 
 
 base = '/home/nim'
 book_name = 'The_Dragons_of_Krynn_NEW4'
-book_path, texts_folder = create_dirs(base, book_name, ref, chunk_size)
+book_path, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 # List of chapters to find
 chapters = ['Seven Hymns of the Dragon', 'The Final Touch', 'Night of Falling Stars', 'Honor Is All', 'Easy Pickings', 'A Dragon to the Core',
@@ -51,10 +50,6 @@ chapter_locations = find_chapter_locations_full_block(epub_content, chapters) # 
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
-
-# # Print the chapter locations
-# for chapter, locations in chapter_locations.items():
-#     print(f"'{chapter}' found at positions: {locations}")
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -72,7 +67,9 @@ for chapter_idx in [8]:
     if chapter_idx == 0:
         chapter_text = convert_latin_numbers_to_words(chapter_text)
 
-    chapter_text = add_space_after_nth_newline_block(chapter_text, 2)
+    processed_substring = remove_first_newline_block(chapter_text[:50])
+    chapter_text = processed_substring + chapter_text[50:]
+    chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
     processed_substring = process_chunk_add_new_section(chapter_text[100:])
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently su
@@ -81,7 +78,7 @@ for chapter_idx in [8]:
 
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
-        save_text_chunk(texts_folder, chapter_name_adj, chunk, idx)
+        save_text_chunk(text_chunks_dir, chapter_name_adj, chunk, idx)
 
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)

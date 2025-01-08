@@ -36,7 +36,7 @@ start_zero = True # True if we have a prologue (or something else), False if we 
 
 base = '/home/nim'
 book_name = 'King_of_the_Dead'
-book_path, texts_folder = create_dirs(base, book_name, ref, chunk_size)
+book_path, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 
 # List of chapters to find
@@ -75,7 +75,7 @@ for chapter_idx in [26]:
 
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
-        save_text_chunk(texts_folder, chapter_name_adj, chunk, idx)
+        save_text_chunk(text_chunks_dir, chapter_name_adj, chunk, idx)
 
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)

@@ -34,7 +34,7 @@ start_zero = True # True if we have a prologue (or something else), False if we 
 
 base = '/home/nim'
 book_name = 'Baroness_of_Blood2'
-book_path, texts_folder = create_dirs(base, book_name, ref, chunk_size)
+book_path, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 
 # List of chapters to find
@@ -53,7 +53,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [0]:
+for chapter_idx in [1]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
@@ -62,7 +62,7 @@ for chapter_idx in [0]:
 
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
-    chapter_text = add_space_after_nth_newline_block(chapter_text, 2)
+    chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
     processed_substring = process_chunk_add_new_section(chapter_text[100:])
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
@@ -75,7 +75,7 @@ for chapter_idx in [0]:
     # Process each chunk and generate audio
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
 
-        save_text_chunk(texts_folder, chapter_name_adj, chunk, idx)
+        save_text_chunk(text_chunks_dir, chapter_name_adj, chunk, idx)
         filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
