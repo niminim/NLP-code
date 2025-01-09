@@ -34,7 +34,7 @@ start_zero = True # True if we have a prologue (or something else), False if we 
 
 base = '/home/nim'
 book_name = 'Baroness_of_Blood2'
-book_path, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
+book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 
 # List of chapters to find
@@ -53,12 +53,12 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-for chapter_idx in [1]:
+for chapter_idx in [0]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx]
     chapter_name_adj = chapter_name.replace(' ', '_')
-    chapter_folder =  os.path.join(book_path, chapter_name_adj)
-    os.makedirs(chapter_folder, exist_ok=True)
+    chapter_audio_dir =  os.path.join(book_path, 'audio', chapter_name_adj)
+    os.makedirs(chapter_audio_dir, exist_ok=True)
 
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
@@ -76,7 +76,7 @@ for chapter_idx in [1]:
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
 
         save_text_chunk(text_chunks_dir, chapter_name_adj, chunk, idx)
-        filepath = os.path.join(chapter_folder, f"part{idx + 1}.wav")
+        filepath = os.path.join(chapter_audio_dir, f"part{idx + 1}.wav")
         print(chunk)
         tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
@@ -84,10 +84,9 @@ for chapter_idx in [1]:
         #     break
 
     # Concat parts to assemble the chapter
-    # # Concat parts to assemble the chapter
     chapter_str = chapter_idx_str(chapter_idx, start_zero)
-    output_file = os.path.join(book_path, chapter_str + chapter_name_adj + f".{audio_format}")  # Replace with your output file path
-    concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
+    output_file = os.path.join(audio_dir, chapter_str + chapter_name_adj + f".{audio_format}")  # Replace with your output file path
+    concat_wavs_in_folder(audio_dir, output_file, format=audio_format)
 
     # Sleep for 15 seconds
     time.sleep(5)

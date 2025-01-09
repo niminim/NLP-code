@@ -4,12 +4,17 @@ import librosa
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 from tqdm import tqdm
 
-# Initialize the processor and model
-processor = WhisperProcessor.from_pretrained("openai/whisper-large-v3")
-model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large-v3").to("cuda")
+
+def get_model(model_name):
+
+    if model_name=='whisper':
+        # Initialize the processor and model
+        processor = WhisperProcessor.from_pretrained("openai/whisper-large-v3")
+        model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large-v3").to("cuda")
+    return model, processor
 
 
-def preprocess_audio(file_path):
+def preprocess_audio(processor, file_path):
     """
     Preprocess the audio file to extract features suitable for Whisper.
     """
@@ -22,33 +27,33 @@ def preprocess_audio(file_path):
     return input_features
 
 
-def transcribe_audio_folder(chapter_folder):
+def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
     # Ensure the folder exists
-    if not os.path.exists(chapter_folder):
-        print(f"Folder not found: {chapter_folder}")
+    if not os.path.exists(audio_dir):
+        print(f"Folder not found: {audio_dir}")
         return
 
     # List and sort .wav files numerically (e.g., part1, part2, ...)
     wav_files = sorted(
-        [f for f in os.listdir(chapter_folder) if f.endswith('.wav')],
+        [f for f in os.listdir(audio_dir) if f.endswith('.wav')],
         key=lambda x: int(''.join(filter(str.isdigit, x)))
     )
     if not wav_files:
-        print(f"No .wav files found in: {chapter_folder}")
+        print(f"No .wav files found in: {audio_dir}")
         return
 
     # Create an output folder for transcriptions
-    output_folder = os.path.join(chapter_folder, "transcriptions")
-    os.makedirs(output_folder, exist_ok=True)
+    output_folder = os.path.join(transcriptions_dir)
+    os.makedirs(transcriptions_dir, exist_ok=True)
 
     # Loop through and transcribe each file
 
     for idx, wav_file in enumerate(tqdm(wav_files)):
     # for wav_file in wav_files:
-        file_path = os.path.join(chapter_folder, wav_file)
+        file_path = os.path.join(audio_dir, wav_file)
         try:
             # Preprocess the audio file
-            input_features = preprocess_audio(file_path).to("cuda")
+            input_features = preprocess_audio(processor,file_path).to("cuda")
 
             # Generate transcription
             predicted_ids = model.generate(input_features)
@@ -67,5 +72,13 @@ def transcribe_audio_folder(chapter_folder):
 
 
 # Example usage
-chapter_folder = "/home/nim/Baroness_of_Blood2_by_ralph_lister_350/One"
-transcribe_audio_folder(chapter_folder)
+base = '/home/nim/The_Dragons_of_Krynn_NEW4_by_ralph_lister_350'
+chapter = "Prologue"  # Prologue, One
+chapter = "Scourge_of_the_Wicked_Kendragon"  # Prologue, One
+
+model_name= 'whisper'
+model, processor = get_model(model_name)
+
+audio_dir = os.path.join(base, chapter)
+transcriptions_dir = os.path.join(base, "texts", "transcriptions", chapter)
+transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
