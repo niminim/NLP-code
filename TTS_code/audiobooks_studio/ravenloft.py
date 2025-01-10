@@ -2,8 +2,6 @@ import os
 import time
 from tqdm import tqdm
 
-import torch
-from TTS.api import TTS
 
 import sys
 project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
@@ -16,7 +14,7 @@ from tools.clean_text import *
 from tools.finalize_files import *
 from tools.text_tools import *
 from tools.path_tools import *
-from tools.text_conversion_tools import *
+from tools.create_models import *
 from book_chapters import *
 
 
@@ -41,23 +39,22 @@ book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(bas
 # List of chapters
 chapters = chapter_names['Baroness_of_Blood']
 
-
-# Find all locations of chapter titles
+# Find locations of chapters by their header
 chapter_locations = find_chapter_locations_full_block2(epub_content, chapters) # different here
 sorted_chapters = sort_chapters_by_position(chapter_locations)
 chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+tts_model = get_model(model_name ='xtts_v2')
+
 
 for chapter_idx in [0]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
-    chapter_name = chapters[chapter_idx]
-    chapter_name_adj = chapter_name.replace(' ', '_')
-    chapter_audio_dir =  os.path.join(book_path, 'audio', chapter_name_adj)
+    chapter_name = chapters[chapter_idx].replace(' ', '_')
+    chapter_audio_dir =  os.path.join(audio_dir, chapter_name)
     os.makedirs(chapter_audio_dir, exist_ok=True)
 
+    # Process each chunk
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
     chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
@@ -70,20 +67,20 @@ for chapter_idx in [0]:
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
 
-    # Process each chunk and generate audio
+    # Generate audio and save the original text of each chunk
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
 
-        save_text_chunk(text_chunks_dir, chapter_name_adj, chunk, idx)
+        save_text_chunk(text_chunks_dir, chapter_name, chunk, idx)
         filepath = os.path.join(chapter_audio_dir, f"part{idx + 1}.wav")
         print(chunk)
-        tts.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
+        tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
         # if idx == 8:
         #     break
 
     # Concat parts to assemble the chapter
     chapter_str = chapter_idx_str(chapter_idx, start_zero)
-    output_file = os.path.join(audio_dir, chapter_str + chapter_name_adj + f".{audio_format}")  # Replace with your output file path
+    output_file = os.path.join(audio_dir, chapter_str + chapter_name + f".{audio_format}")
     concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
 
     # Sleep for 15 seconds
