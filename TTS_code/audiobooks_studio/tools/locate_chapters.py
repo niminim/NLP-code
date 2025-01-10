@@ -51,7 +51,7 @@ def find_chapter_locations_full_block(text, chapters):
     return results
 
 
-# For Baronessof Blood
+# For Baroness of Blood (and other ravenloft books)
 def find_chapter_locations_full_block2(text, chapters):
     """
     Finds all occurrences of chapter titles in the text where:

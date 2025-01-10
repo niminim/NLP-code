@@ -1,16 +1,12 @@
 import os
 from tqdm import tqdm
 
-import torch
-from TTS.api import TTS
-
 import sys
 project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
 
 from tools.split_text import *
 from tools.clean_text import *
-from tools.clean_text2 import *
 from tools.finalize_files import *
 
 

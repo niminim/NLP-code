@@ -71,14 +71,21 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
             print(f"Error processing {wav_file}: {e}")
 
 
-# Example usage
-base = '/home/nim/The_Dragons_of_Krynn_NEW4_by_ralph_lister_350'
-chapter = "Prologue"  # Prologue, One
-chapter = "Scourge_of_the_Wicked_Kendragon"  # Prologue, One
+##############################
+
+
+base = '/home/nim/'
+book = 'Forged_in_Cold_by_ralph_lister_350' # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
+# The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Forged_in_Cold_by_ralph_lister_350
+book_path = os.path.join(base, book)
+
+chapter = "One"  # Prologue, One
+# chapter = "Scourge_of_the_Wicked_Kendragon"
+chapter = "Uri"
 
 model_name= 'whisper'
 model, processor = get_model(model_name)
 
-audio_dir = os.path.join(base, chapter)
-transcriptions_dir = os.path.join(base, "texts", "transcriptions", chapter)
+audio_dir = os.path.join(book_path, "audio", chapter)
+transcriptions_dir = os.path.join(base, book, "texts", "transcriptions", chapter)
 transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)

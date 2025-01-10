@@ -1,5 +1,7 @@
-import numpy as np
+import os
 import re
+import numpy as np
+import json
 
 
 def open_text_file(file_path, encoding="utf-8"):
@@ -24,6 +26,34 @@ def open_text_file(file_path, encoding="utf-8"):
     except IOError as e:
         print(f"Error: An I/O error occurred while reading the file '{file_path}': {e}")
     return None
+
+
+def get_sorted_text_files(chapter_dir):
+    """
+    List and sort files in a directory by their part number.
+
+    Args:
+        chapter_dir (str): Path to the directory containing files.
+
+    Returns:
+        list: Sorted list of file names by part number.
+    """
+
+    # Check if the directory exists
+    if not os.path.exists(chapter_dir):
+        print(f"Error: The directory '{chapter_dir}' does not exist.")
+        return []  # Return an empty list or handle as needed
+
+    # List all files in the directory
+    files = os.listdir(chapter_dir)
+
+    # Filter files matching the 'part<number>' pattern
+    part_files = [file for file in files if re.match(r'part\d+', file)]
+
+    # Sort files by extracting the part number
+    part_files.sort(key=lambda f: int(re.search(r'\d+', f).group()))
+
+    return part_files
 
 
 # Text Normalization Function
@@ -66,7 +96,7 @@ def calculate_wer(original_text, transcribed_text):
 
     # WER = (S + D + I) / N
     wer = dp[len(original_words)][len(transcribed_words)] / len(original_words)
-    return wer
+    return round(wer, 3)
 
 
 # CER Calculation
@@ -98,23 +128,50 @@ def calculate_cer(original_text, transcribed_text):
 
     # CER = (S + D + I) / N
     cer = dp[len(original_chars)][len(transcribed_chars)] / len(original_chars)
-    return cer
+    return round(cer, 3)
+
+
+def update_evaluation_data(evaluation_data, chapter, part, original, transcribed, wer, cer):
+    """
+    Updates the evaluation data dictionary with the results for a specific part of a chapter.
+    """
+    # Ensure the chapter key exists in the dictionary
+    if f"chapter {chapter}" not in evaluation_data:
+        evaluation_data[f"chapter {chapter}"] = {}
+
+    # Add or update the part data
+    evaluation_data[f"chapter {chapter}"][f"Part {part}"] = {
+        "original_text": original,
+        "transcribed_text": transcribed,
+        "original_text_len": len(original.split()),
+        "transcribed_text_len": len(transcribed.split()),
+        "WER": f"{wer:.2%}",
+        "CER": f"{cer:.2%}"
+    }
 
 # Example Usage
 if __name__ == "__main__":
-    original = "The quick brown fox jumps over the lazy dog."
-    transcribed = "The quick brown fox jumped over the dog."
 
-    chapter = 'Prologue' # Prologue, One
-    chapter = 'Scourge_of_the_Wicked_Kendragon'
+    base = "/home/nim"
+    book = "Baroness_of_Blood2_by_ralph_lister_350" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
+    # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
+    chapter = 'One' # Prologue, One
+    # chapter = 'Scourge_of_the_Wicked_Kendragon'
+    chapter = 'One' #
 
     part = '32'
 
-    for part in np.arange(1,100):
+    book_path = os.path.join(base, book)
+    orig_text_files = get_sorted_text_files(os.path.join(book_path, "texts", "orig_chunks", chapter))
+
+
+    # Initialize the data structure
+    evaluation_data = {}
+
+    for part in np.arange(1,len(orig_text_files)+1):
         print('part: ', part)
-        base = "/home/nim/The_Dragons_of_Krynn_NEW4_by_ralph_lister_350"
-        original = open_text_file(f"{base}/texts/orig_chunks/{chapter}/part{part}.txt")
-        transcribed = open_text_file(f"{base}/texts/transcriptions/{chapter}/part{part}.txt")
+        original = open_text_file(f"{book_path}/texts/orig_chunks/{chapter}/part{part}.txt")
+        transcribed = open_text_file(f"{book_path}/texts/transcriptions/{chapter}/part{part}.txt")
 
         # Normalize the texts
         original_normalized = normalize_text(original)
@@ -126,6 +183,17 @@ if __name__ == "__main__":
 
         print(f"WER: {wer:.2%}")
         print(f"CER: {cer:.2%}")
+        update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer)
         print('*******')
+
+        output_folder = '/home/nim'
+        filepath = os.path.join(output_folder, "uri.json")
+
+        # Save with or without indent
+        with open(filepath, "w", encoding="utf-8") as file:
+            json.dump(evaluation_data, file,
+                      indent=4)  # Use `indent=4` for pretty formatting or remove it for compact JSON
+
+        print(f"JSON file saved at: {filepath}")
 
 

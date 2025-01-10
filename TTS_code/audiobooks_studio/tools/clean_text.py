@@ -1,114 +1,65 @@
 import re
+import torch
+from TTS.api import TTS
 
-######## Clean text
+# device = "cuda" if torch.cuda.is_available() else "cpu"
+# tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+#
+#
+# c0 =  'Scourge of the Wicked Kendragon\nJanet Pack\n\n\n\n\n\n\n"But I was only… aaahhhh!"\nPropelled by the shopkeeper\'s arm, the kender Mapshaker Wanderfuss became a bird, sailing through the door and thudding into the middle of Daltigoth\'s main street. Dust clouded around the kender. Indignant and coughing, he levered himself to a sitting position'
+# c5 = '" Mapshaker wandered into the forge area and continued his explanation. "I only tasted it. After all, one corner was hanging over the edge of the table."\n"I\'m busy. Go away," the smith said roughly, pumping the bellows until the roaring fire made conversation impossible.\nA merchant\'s messenger scurried by with a handful of accounts'
+# c31 = '"\nPiling her parcels in a dry space, the assistant joined Myrthin, eyes searching the wooden floor.\nThe mage finally grunted in satisfaction and straightened, a tiny scale from the brass dragon balanced on the tip of one crooked finger. "Get someone to patch the roof well enough so the rest of the house won\'t flood while I\'m gone'
+# c33 = '" He turned toward his workroom, the precious dragon scale imprisoned between gnarled thumb and forefinger. "Get to work, Kharian. Now."\n\n\n\n\n\n\n\n\n\nMapshaker\'s eyes were closed. He felt much cooler than he had a few minutes ago. Wind tickled his ears and soothed the fire streaking throughout his body. He relaxed'
+#
+# c_0 = 'One\n\n\n\n\n\n\n“Ilsabet, wake up!”\nIlsabet pulled the down-filled covers tighter around her thin body and ignored her maidservant’s call.\n“You were up half the night writing in that journal, weren’t you?”\nGreta, Ilsabet’s maid, could sign her name in a beautiful script, but that was all'
+# c_1 = 'Reading, writing, even contemplative thought seemed beyond her reach. But she was a practical and caring woman, and Ilsabet ignored the shortcomings. “No,” she replied. “I just couldn’t sleep.”\nInstead, Ilsabet had gone to Lord Jorani’s chambers in the highest room in the castle tower'
+#
 
-# To tackles first chpater name followed by a block of \n with no whitespace between the text
-def add_space_after_first_newline_block(text):
+def remove_first_newline_block(text):
     """
-    Adds a whitespace after the first occurrence of 3 or more newlines in the text.
+    Removes the first block of consecutive newline characters from the text.
 
     Args:
         text (str): The input text.
 
     Returns:
-        str: The modified text with a space added after the first block of 3 or more newlines.
+        str: The modified text with the first block of newlines removed.
     """
-    # Match the first occurrence of 3 or more newlines
-    pattern = r'(\n{3,})(?! )'
+    # Define the pattern: one or more consecutive newline characters
+    pattern = r'\n+'
 
-    # Add a space after the newline block
-    modified_text = re.sub(pattern, r'\1 ', text, count=1)
+    # Remove the first occurrence of the pattern
+    modified_text = re.sub(pattern, '', text, count=1)
 
     return modified_text
 
-# def fix_punctuation_with_qoute(text):
-#     """
-#     Replaces:
-#     - All occurrences of '."' with '".' in the input text.
-#     - All occurrences of ',"' with '",' in the input text.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with corrected punctuation.
-#     """
-#     # Replace '."' with '".'
-#     text = text.replace('."', '".')
-#     # Replace ',"' with '",'
-#     text = text.replace(',"', '",')
-#     return text
-
-
-def fix_punctuation_with_quote(text):
+def add_space_after_nth_newline_block(text, n, min_newlines=3):
     """
-    Adjusts the placement of commas and periods relative to quotation marks in the text.
-    Specifically:
-    - Replaces instances of ',"' with '",'.
-    - Replaces instances of '."' with '".'.
+    Adds a space after the nth occurrence of a block of consecutive newlines
+    (with a minimum specified) in the text.
 
     Args:
         text (str): The input text.
+        n (int): The occurrence number of the newline block to modify (1-based index).
+        min_newlines (int): The minimum number of consecutive newlines to define a block.
 
     Returns:
-        str: The text with corrected punctuation placement.
+        str: The modified text with a space added after the specified newline block.
     """
-    # Replace ',"' with '",'
-    text = re.sub(r'(\w),”', r'\1”,', text)
-    # Replace '."' with '".'
-    text = re.sub(r'(\w)\.”', r'\1”.', text)
+    # Define the pattern: block of at least 'min_newlines' consecutive newlines
+    pattern = rf'(\n{{{min_newlines},}})(?! )'
+
+    # Find all matches of the pattern
+    matches = list(re.finditer(pattern, text))
+
+    # Check if the nth occurrence exists
+    if n <= len(matches):
+        # Get the start and end positions of the nth match
+        start, end = matches[n - 1].span()
+        # Insert a space after the newline block
+        text = text[:end] + ' ' + text[end:]
+
     return text
-
-
-def replace_period_newline(text):
-    """
-    Replaces occurrences of a period followed by a newline character with just a period.
-
-    Args:
-        text (str): The input text.
-
-    Returns:
-        str: The modified text with '.\n' replaced by '.'.
-    """
-    # Use re.sub to replace '.\n' with '.'
-    return re.sub(r'\.\n', '. ', text)
-
-
-def replace_newline_after_quote(text):
-    """
-    Replaces occurrences where a quotation mark followed by a period and a newline,
-    or just a newline, is immediately followed by a capital letter. The newline is replaced with a space.
-
-    Args:
-        text (str): The input text.
-
-    Returns:
-        str: The modified text with specific newlines replaced by spaces.
-    """
-    # Pattern to match '."\\n' or '"\\n' followed by a capital letter
-    pattern = r'([”"]\.)?\n([A-Z])'
-    # Replace the matched pattern by removing the newline and adding a space
-    return re.sub(pattern, lambda m: (m.group(1) or '') + ' ' + m.group(2), text)
-
-
-def add_space_after_newlines_with_typographic_quote_and_capital(text):
-    """
-    Adds a space after one or more newlines followed by a quote (ASCII or typographic) and a capital letter.
-
-    Args:
-        text (str): The input text.
-
-    Returns:
-        str: The modified text with a space added after the newline block.
-    """
-    # Match one or more newlines followed by a quote (ASCII or typographic) and a capital letter
-    pattern = r'(\n+)([“"])([A-Z])'
-    # Add a space after the newline block
-    modified_text = re.sub(pattern, r'\1 \2\3', text)
-    return modified_text
-
-
-
 
 def process_chunk_add_new_section(chunk):
     """
@@ -118,23 +69,50 @@ def process_chunk_add_new_section(chunk):
     return re.sub(r'\n{4,}', ' New section - ', chunk)
 
 
-# Tacles "\n"
-# def process_chunk_replace_quotes_newline(input_text):
-    # """
-    # Replaces instances of '"' followed by '\n' followed by '"' with a single space.
-    #
-    # Args:
-    #     input_text (str): The input text.
-    #
-    # Returns:
-    #     str: The text with the pattern replaced by a single space.
-    # """
-    # return re.sub(r'"\n"', '" "', input_text)
-
-def process_chunk_replace_quotes_newline(input_text):
+def process_comma_quote(text):
     """
-    Replaces instances of a quote (ASCII or typographic) followed by '\n'
-    followed by another quote with a single space.
+    Replaces occurrences of a comma immediately followed by a double quote
+    (standard or typographic) with the double quote followed by a comma.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with ',<quote>' replaced by '<quote>,'.
+    """
+    # Define the pattern: comma followed by any double quote character
+    pattern = r',([“”"])'
+    # Replace the pattern with the quote followed by a comma
+    return re.sub(pattern, r'\1,', text)
+
+
+def process_period_quote(text):
+    """
+    Replaces occurrences where a period immediately precedes a double quote
+    (standard or typographic) with the double quote followed by the period.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with '<period><quote>' replaced by '<quote><period>'.
+    """
+    # Define the pattern: period followed by any double quote character
+    pattern = r'\.([“”"])'
+    # Replace the pattern with the quote followed by the period
+    return re.sub(pattern, r'\1.', text)
+
+# text = '"No,"'
+# text2 = '"No."'
+#
+# out4 = process_comma_quote(text)
+# out5 = process_period_quote(text2)
+
+
+def process_quote_newline_quote(input_text):
+    """
+    Replaces instances of a double quote (standard or typographic) followed by a newline character
+    and another double quote with a single space.
 
     Args:
         input_text (str): The input text.
@@ -142,166 +120,235 @@ def process_chunk_replace_quotes_newline(input_text):
     Returns:
         str: The text with the pattern replaced by a single space.
     """
-    # Match ASCII or typographic quotes around a newline
-    return re.sub(r'([“"])\\n([“"])', r'\1 \2', input_text)
+    # Match ASCII or typographic quotes followed by a newline and another quote
+    pattern = r'([“”"])\n([“”"])'
+    # Replace the pattern with a single space
+    return re.sub(pattern, ' "', input_text)
 
 
-#
-# def process_chunk_replace_quotes_newlines(input_text):
-#     """
-#     Replaces instances of '"' followed by one or more '\n' characters followed by '"' with a single space.
-#
-#     Args:
-#         input_text (str): The input text.
-#
-#     Returns:
-#         str: The text with the pattern replaced by a single space.
-#     """
-#     return re.sub(r'"\n{1,}"', '" "', input_text)
+# out6 = process_quote_newline_quote(c5)
+# out = process_quote_newline_quote('the table."\n"I\'m busy')
 
-def process_chunk_replace_quotes_newlines(input_text):
+
+def process_quote_newlines_letter(text):
     """
-    Replaces instances of a quote (ASCII or typographic) followed by one or more '\n' characters
-    followed by another quote with a single space.
+    Replaces occurrences of a double quote (standard or typographic) followed by one or more newline characters
+    and a letter with the double quote followed by a space and the letter.
 
     Args:
-        input_text (str): The input text.
+        text (str): The input text.
 
     Returns:
-        str: The text with the pattern replaced by a single space.
+        str: The modified text with specific patterns replaced.
     """
-    # Match ASCII or typographic quotes around one or more newlines
-    return re.sub(r'([“"])\\n{1,}([“"])', r'\1 \2', input_text)
+    # Define the pattern: double quote (standard or typographic) followed by one or more newline characters and a letter
+    pattern = r'([“”"])\r?\n{1,2}([a-zA-Z])'
+    # Replace the pattern with double quote followed by a space and the letter
+    return re.sub(pattern, r'\1 \2', text)
 
-
-
-# def replace_right_quote_newline(input_text):
-#     """
-#     Replaces instances of '”\n' with a single space.
 #
-#     Args:
-#         input_text (str): The input text.
+# out = process_quote_newlines_letter(c0)
 #
-#     Returns:
-#         str: The text with the pattern replaced.
-#     """
-#     return re.sub(r'”\n', ' ', input_text)
+# text = '"\nPiling her parcels in a dry space, the assistant joined Myrthin'
+# out = process_quote_newlines_letter(text)
+# tts.tts_to_file(text=out, speaker_wav="/home/nim/Documents/ralph_lister.wav", language="en", file_path="/home/nim/TRY.wav")
+#
 
-def replace_right_quote_newline(input_text):
+
+def process_quote_newline(text):
     """
-    Replaces instances of '”\n' or '”\n{1,}' (one or more newlines) with a single space.
+    Replaces occurrences of a double quote (standard or typographic) followed by a newline character
+    with the double quote, a space, and a newline.
 
     Args:
-        input_text (str): The input text.
+        text (str): The input text.
 
     Returns:
-        str: The text with the pattern replaced.
+        str: The modified text with specific patterns replaced.
     """
-    # Match a typographic right quote followed by one or more newline characters
-    return re.sub(r'”\n{1,}', '” ', input_text)
+    # Define the pattern: double quote (standard or typographic) followed by newline
+    pattern = r'([“”"])\n'
+    # Replace the pattern with the double quote followed by a space and newline
+    return re.sub(pattern, r'\1 ', text)
 
-
-# def replace_newline_after_quote(input_text):
-#     """
-#     Replaces instances of '"\n' followed by a capital letter with '" '
-#     and retains the capital letter.
+# text = '"\nPiling her parcels in a dry space, the assistant joined Myrthin'
+# out = process_quote_newline(text)
 #
-#     Args:
-#         input_text (str): The input text.
-#
-#     Returns:
-#         str: The text with the pattern replaced.
-#     """
-#     return re.sub(r'"\n([A-Z])', r'" \1', input_text)
+# out3 = process_quote_newline(c5)
+# print(out3)
 
 
-def replace_newline_after_quote(input_text):
+def process_newlines_quote(text):
     """
-    Replaces instances of '"' followed by a newline and then a capital letter
-    with '" ' (adding a space instead of the newline) and retains the capital letter.
+    Replaces occurrences of one or two newline characters followed by a double quote
+    (standard or typographic) with a space followed by the double quote.
 
     Args:
-        input_text (str): The input text.
+        text (str): The input text.
 
     Returns:
-        str: The text with the pattern replaced.
+        str: The modified text with the specified patterns replaced.
     """
-    # Match a straight quote, followed by a newline, and then a capital letter
-    return re.sub(r'"\n+([A-Z])', r'" \1', input_text)
+    # Define the pattern: one or two newline characters followed by a double quote
+    pattern = r'\n{1,2}([“”"])'
+    # Replace the pattern with a space followed by the matched double quote
+    return re.sub(pattern, r' \1', text)
+
+# text = 'And all.\n\n"\Piling her parcels in a dry space, the assistant joined Myrthin'
+# out3 = process_newlines_quote(text)
+# print(out3)
 
 
+# out = process_newlines_quote(c0)
+# print(out)
+# tts.tts_to_file(text=out, speaker_wav="/home/nim/Documents/ralph_lister.wav", language="en", file_path="/home/nim/TRY.wav")
+#
+# text = '\nShe hesitated, then said, “Very well, but it comes off before we reach my father’s camp.”\nThey rode in silence through the fields, fallow in late autumn, Jorani constantly scanning the countryside, alert for an ambush. At the edge of the forest road, he reined in his horse and gave three loud whistles. A handful of soldiers rode toward them'
+# out = process_quote_newlines_letter(text)
+# tts.tts_to_file(text=out, speaker_wav="/home/nim/Documents/ralph_lister.wav", language="en", file_path="/home/nim/TRY.wav")
+#
+#
+# text = 'A love,\n"A'
+# out = process_newlines_quote(text)
 
 
-
-
-def process_and_fix_text(input_text):
+def process_comma_newline_quote(text):
     """
-    Processes the input text to:
-    1. Replace instances of '"' followed by '\n' followed by '"' with a single space.
-    2. Replace instances of '"' followed by one or more '\n' characters followed by '"' with a single space.
-    3. Replace instances of '”\n' with a single space.
-    4. Replace instances of '"\n' followed by a capital letter with '" ' (retaining the capital letter).
-    5. Replace all occurrences of '."' with '".'.
-    6. Replace all occurrences of ',"' with '",'.
+    Replaces occurrences of a comma followed by a newline character and a double quote
+    (standard or typographic) with a comma, a space, and the double quote.
 
     Args:
-        input_text (str): The input text.
+        text (str): The input text.
 
     Returns:
-        str: The processed text with all patterns replaced.
+        str: The modified text with ',\n"' patterns replaced by ', "'.
     """
-    # Replace '"' followed by '\n' followed by '"'
-    input_text = re.sub(r'"\n"', '" "', input_text)
+    # Define the pattern: comma followed by optional carriage return, newline, and a double quote
+    pattern = r',\r?\n([“”"])'
+    # Replace the pattern with comma, space, and the double quote
+    return re.sub(pattern, r', \1', text)
 
-    # Replace '"' followed by one or more '\n' characters followed by '"'
-    input_text = re.sub(r'"\n{1,}"', '" "', input_text)
-
-    # Replace '”\n' with a single space
-    input_text = re.sub(r'”\n', ' ', input_text)
-
-    # Replace '"\n' followed by a capital letter with '" '
-    input_text = re.sub(r'"\n([A-Z])', r'" \1', input_text)
-
-    # Replace '."' with '".'
-    input_text = input_text.replace('."', '".')
-
-    # Replace ',"' with '",'
-    input_text = input_text.replace(',"', '",')
-
-    return input_text
+# text4 = 'A love,\n"And'
+# out = process_comma_newline_quote(text4)
 
 
-# def process_newlines(text): # this was used and worked
-#     """
-#     Replaces any occurrence of '\n' (single or multiple) with a single space.
+def process_comma_newline_letter(text):
+    """
+    Replaces occurrences of a comma followed by exactly one newline character and a letter,
+    or a comma followed by exactly one newline character and a quote (standard or typographic),
+    with the comma followed by a space and the letter or quote.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with ',\n<letter>' or ',\n<quote>' replaced by ', <letter>' or ', <quote>'.
+    """
+    # Define the pattern: comma followed by optional carriage return and a single newline, then a letter or quote
+    pattern = r',\r?\n([a-zA-Z“”"])'
+    # Replace the pattern with comma followed by a space and the letter or quote
+    return re.sub(pattern, r', \1', text)
+
+# text= 'A love,\nA'
+# out = process_comma_newline_letter(text)
+
+
+# might be required to adjust when paragraphs have more (\n)s
+def process_period_newlines_quote(text):
+    """
+    Replaces occurrences of a period followed by one or two newlines and a double quote
+    (standard or typographic) with the period followed by a space and the double quote.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with specific patterns replaced.
+    """
+    # Define the pattern: period followed by one or two newlines and a double quote
+    pattern = r'\.\n{1,2}([“”"])'
+    # Replace the pattern with period followed by a space and the double quote
+    return re.sub(pattern, r'. \1', text)
+
+# text5 = 'floor.\n"The mage finally grunted'
+# text5 = 'floor.\n\n"The mage finally grunted'
+# out5 = process_period_newlines_quote(text5)
+
+
+# might be required to adjust when paragraphs have more (\n)s
+def process_period_newlines_letter(text):
+    """
+    Replaces occurrences of a period followed by one or two newlines and a single letter
+    with the period followed by a space and the letter.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with specific newlines replaced.
+    """
+    # Define the pattern: period followed by one or two newlines and a single letter
+    pattern = r'\.\n{1,2}([a-zA-Z])'
+    # Replace the pattern with period followed by a space and the letter
+    return re.sub(pattern, r'. \1', text)
+
+# text3 = 'A love.\nA'
+# text3 = 'A love.\n\nA'
+# out3 = process_period_newlines_letter(text3)
+
+
+# might be required to adjust when paragraphs have more (\n)s
+def process_period_newlines(text):
+    """
+    Replaces occurrences of a period followed by one or two newline characters,
+    optionally followed by a quote (standard or typographic), with a period,
+    a space, and the quote if present.
+
+    Args:
+        text (str): The input text.
+
+    Returns:
+        str: The modified text with '.\n', '.\n\n', '.\n"', '.\n\n"', '.\n“', etc.,
+             replaced by '. ', '. "', '. “', etc.
+    """
+    # Define the pattern: period followed by one or two newline sequences,
+    # optionally followed by a quote character
+    pattern = r'\.(\r?\n){1,2}([“”"])?'
+    # Replace the pattern with period, space, and the optional quote
+    return re.sub(pattern, lambda m: '. ' + (m.group(2) or ''), text)
+
+
+# text4 = 'floor.\n\nThe mage finally grunted'
+# text5 = 'floor.\nThe mage finally grunted'
+# text6 = 'floor.\n\n"The mage finally grunted'
 #
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with all '\n' sequences replaced by a single space.
-#     """
-#     # Replace any sequence of \n (one or more) with a single space
-#     return re.sub(r'\n+', ' ', text)
+# out4 = process_period_newlines(text4)
+# out5 = process_period_newlines(text5)
+# out6 = process_period_newlines(text6)
 
 
-# def process_newlines(text):
-#     """
-#     Replaces sequences of multiple '\n' with ' \n ' (a space, a newline, and another space),
-#     and ensures single '\n' is surrounded by exactly one space, but avoids adding redundant spaces.
-#
-#     Args:
-#         text (str): The input text.
-#
-#     Returns:
-#         str: The modified text with '\n' properly normalized.
-#     """
-#     # Replace multiple \n with ' \n '
-#     text = re.sub(r'\n{2,}', ' \n ', text)
-#
-#     # Ensure a single \n is surrounded by a single space, avoiding duplicate spaces
-#     text = re.sub(r' ?\n ?', ' \n ', text)
-#
-#     return text
 
-######## End of Clean text
+
+def process_text(text):
+    """
+    Calls all text processing functions in a specified order.
+
+    Args:
+        text (str): The input text to be processed.
+
+    Returns:
+        str: The processed text after all transformations.
+    """
+    # Apply all transformations in the specified order
+    text = process_comma_quote(text)
+    text = process_period_quote(text)
+    text = process_quote_newline_quote(text)
+    text = process_quote_newlines_letter(text)
+    text = process_quote_newline(text)
+    text = process_newlines_quote(text)
+    text = process_comma_newline_quote(text)
+    text = process_comma_newline_letter(text)
+    text = process_period_newlines_quote(text)
+    text = process_period_newlines_letter(text)
+    text = process_period_newlines(text)
+    return text
