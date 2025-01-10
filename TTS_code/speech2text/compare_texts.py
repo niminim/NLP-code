@@ -59,13 +59,14 @@ def get_sorted_text_files(chapter_dir):
 # Text Normalization Function
 def normalize_text(text):
     """
-    Normalize the text by converting to lowercase, removing punctuation, and extra spaces.
+    Normalize the text by converting to lowercase, replacing all types of dashes with spaces,
+    removing punctuation, and removing extra spaces.
     """
     text = text.lower()  # Convert to lowercase
-    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+    text = re.sub(r'[—–-]', ' ', text)  # Replace all types of dashes with spaces
+    text = re.sub(r'[^\w\s]', '', text)  # Remove other punctuation
     text = re.sub(r'\s+', ' ', text).strip()  # Remove extra spaces
     return text
-
 
 # WER Calculation
 def calculate_wer(original_text, transcribed_text):
@@ -153,11 +154,11 @@ def update_evaluation_data(evaluation_data, chapter, part, original, transcribed
 if __name__ == "__main__":
 
     base = "/home/nim"
-    book = "Baroness_of_Blood2_by_ralph_lister_350" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
-    # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
+    book = "Lord_of_the_Necropolis_by_scott_brick_350" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
+    # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Lord_of_the_Necropolis_by_scott_brick_350
     chapter = 'One' # Prologue, One
     # chapter = 'Scourge_of_the_Wicked_Kendragon'
-    chapter = 'One' #
+    chapter = 'Preface' #
 
     part = '32'
 
@@ -187,7 +188,7 @@ if __name__ == "__main__":
         print('*******')
 
         output_folder = '/home/nim'
-        filepath = os.path.join(output_folder, "uri.json")
+        filepath = os.path.join(output_folder, "necro_350.json")
 
         # Save with or without indent
         with open(filepath, "w", encoding="utf-8") as file:

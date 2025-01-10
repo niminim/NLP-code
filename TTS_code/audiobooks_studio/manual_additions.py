@@ -3,12 +3,9 @@
 import torch
 from TTS.api import TTS
 
-import sys
 import os
-project_root = os.path.abspath("/TTS_code")
-sys.path.append(project_root)
-
-sys.path.append("/TTS_code")
+import sys
+project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
 print(sys.path)
 
@@ -78,3 +75,36 @@ tts.tts_to_file(text=text1, speaker_wav="/home/nim/Documents/scott_brick.wav", l
 tts.tts_to_file(text=text2, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/07_0-Part_Two-Oerth.wav")
 tts.tts_to_file(text=text3, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/18_0-Part_Three-Barovia.wav")
 tts.tts_to_file(text=text4, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/22_0-Part_Four-Darkon.wav")
+#############
+
+import tqdm
+from tools.create_models import *
+from tools.clean_text import *
+from tools.read_file import *
+from tools.split_text import *
+from tools.finalize_files import *
+
+file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
+folder = '/home/nim/Lord_of_the_Necropolis_by_scott_brick_350'
+
+tts_model = get_model(model_name ='xtts_v2')
+
+text = read_epub(file_path)
+text1 = text[-3100:-2100]
+print(text1)
+processed_text = process_text(text1)  # pay attention to paragraphs newlines (currently supports one and two)
+chapter_chunks = efficient_split_text_to_chunks(processed_text, max_length=350)
+
+# Generate audio and save the original text of each chunk
+for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
+    print(chunk)
+    tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
+
+
+    # Concat parts to assemble the chapter
+    chapter_str = chapter_idx_str(chapter_idx, start_zero)
+    output_file = os.path.join(audio_dir, chapter_str + chapter_name + f".{audio_format}")
+    concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
+
+tts_model.tts_to_file(text=processed_text, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/0-Preface.wav")
+################

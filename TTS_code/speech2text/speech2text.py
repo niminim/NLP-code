@@ -75,13 +75,13 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
 
 
 base = '/home/nim/'
-book = 'Forged_in_Cold_by_ralph_lister_350' # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
-# The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Forged_in_Cold_by_ralph_lister_350
+book = 'Lord_of_the_Necropolis_by_scott_brick_100' # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
+# The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Forged_in_Cold_by_ralph_lister_350,
 book_path = os.path.join(base, book)
 
 chapter = "One"  # Prologue, One
 # chapter = "Scourge_of_the_Wicked_Kendragon"
-chapter = "Uri"
+chapter = "Preface"
 
 model_name= 'whisper'
 model, processor = get_model(model_name)

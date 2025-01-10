@@ -2,7 +2,6 @@ import os
 import time
 from tqdm import tqdm
 
-
 import sys
 project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
 sys.path.append(project_root)
@@ -17,16 +16,17 @@ from tools.path_tools import *
 from tools.create_models import *
 from book_chapters import *
 
-
 #############################################################################
-
 
 # Path to your EPUB file
 file_path = '/home/nim/Downloads/Baroness_of_Blood.epub'
 file_path = '/home/nim/Downloads/King_of_the_Dead.epub'
-epub_content = read_epub(file_path)
+file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
 
-ref = 'ralph_lister' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, michael_page, scott_brick, john_lee2
+epub_content = read_epub(file_path)
+print(epub_content[-3100:-2100])
+
+ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, emilia_clarke, perdita_weeks, scott_brick, john_lee2
 chunk_size = 350
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
@@ -34,6 +34,7 @@ start_zero = True # True if we have a prologue (or something else), False if we 
 base = '/home/nim'
 book_name = 'Baroness_of_Blood2' # to be used for the folder name
 book_name = 'King_of_the_Dead'
+book_name = 'Lord_of_the_Necropolis'
 book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 # List of chapters
@@ -48,7 +49,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 tts_model = get_model(model_name ='xtts_v2')
 
 
-for chapter_idx in [0]:
+for chapter_idx in [0,1,2]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)

@@ -14,9 +14,15 @@ chapter_names['Baroness_of_Blood'] = ['Prologue', 'One', 'Two', 'Three', 'Four',
             'Back Cover', 'About the Author'] # Parts appears at the end! only used as a stop point
 
 
-chapter_names['King_of_The_Dead'] = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
+chapter_names['King_of_The_Dead'] = ['Prelude', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
             'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three',
             'Twenty-four', 'Twenty-five', 'Twenty-six',
             'Back Cover'] # Parts appears at the end! only used as a stop point
+
+
+chapter_names['Lord_of_the_Necropolis'] = ['Prelude', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven',
+            'Interlude', 'Twelve', 'Thirteen', 'Fourteen',
+            'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty', 'Twenty-one', 'Twenty-two', 'Twenty-three',
+            'Epilogue', 'Back Cover'] # Parts appears at the end! only used as a stop point
 
 
