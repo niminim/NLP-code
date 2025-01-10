@@ -63,7 +63,7 @@ for chapter_idx in [8]:
     processed_substring = process_chunk_add_new_section(chapter_text[100:])
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently su
-    chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
+    chapter_chunks = split_text_into_chunks(chapter_text, max_length=chunk_size)
 
 
     # Generate audio and save the original text of each chunk

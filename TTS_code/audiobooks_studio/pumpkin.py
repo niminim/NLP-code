@@ -96,7 +96,7 @@ os.makedirs(chapter_folder, exist_ok=True)
 
 
 chapter_text = process_text(text)  # pay attention to paragraphs newlines (currently supports one and two)
-chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
+chapter_chunks = split_text_into_chunks(chapter_text, max_length=chunk_size)
 
 
 # Process each chunk and generate audio
@@ -115,56 +115,56 @@ concat_wavs_in_folder(chapter_folder, output_file, format=audio_format)
 
 
 ###################
-def efficient_split_text_to_chunks2(text, max_length):
-    """
-    Splits the text into the largest possible chunks based on the assigned maximum length,
-    ensuring each chunk ends at a sentence boundary ('.') when possible.
-    If no '.' is found, then split by ','.
-    If no ',' is found, splits at the nearest whitespace to avoid breaking words.
-
-    Args:
-        text (str): The input text to split.
-        max_length (int): The maximum length of each chunk.
-
-    Returns:
-        list: A list of text chunks.
-    """
-    chunks = []
-    start = 0
-
-    while start < len(text):
-        # Determine the furthest point for the current chunk
-        end = min(start + max_length, len(text))
-
-        # Look for the last '.' within the allowable range
-        last_dot_index = text.rfind(".", start, end)
-
-        if last_dot_index == -1:  # If no '.' is found in the range
-            # Look for the last ',' within the range
-            last_comma_index = text.rfind(",", start, end)
-            if last_comma_index != -1:  # If a ',' is found, split at the comma
-                last_dot_index = last_comma_index
-            else:  # If no ',' is found, look for the last whitespace
-                last_space_index = text.rfind(" ", start, end)
-                if last_space_index != -1:  # If a space is found, split at the space
-                    last_dot_index = last_space_index
-                else:  # If no space is found, split at the max length
-                    last_dot_index = end
-
-        # Add the chunk
-        chunks.append(text[start:last_dot_index].strip())
-        # Update the start to the new position
-        start = last_dot_index + 1
-
-    return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
-
-text = (
-    "This is a long text. It contains multiple sentences, each separated by punctuation. "
-    "If a period isn't found, the text should split at a comma, and if neither is present, it splits by spaces."
-)
-
-max_length = 150
-chunks = efficient_split_text_to_chunks2(text, max_length)
-
-for i, chunk in enumerate(chunks, 1):
-    print(f"Chunk {i}: {chunk}")
+# def efficient_split_text_to_chunks2(text, max_length):
+#     """
+#     Splits the text into the largest possible chunks based on the assigned maximum length,
+#     ensuring each chunk ends at a sentence boundary ('.') when possible.
+#     If no '.' is found, then split by ','.
+#     If no ',' is found, splits at the nearest whitespace to avoid breaking words.
+#
+#     Args:
+#         text (str): The input text to split.
+#         max_length (int): The maximum length of each chunk.
+#
+#     Returns:
+#         list: A list of text chunks.
+#     """
+#     chunks = []
+#     start = 0
+#
+#     while start < len(text):
+#         # Determine the furthest point for the current chunk
+#         end = min(start + max_length, len(text))
+#
+#         # Look for the last '.' within the allowable range
+#         last_dot_index = text.rfind(".", start, end)
+#
+#         if last_dot_index == -1:  # If no '.' is found in the range
+#             # Look for the last ',' within the range
+#             last_comma_index = text.rfind(",", start, end)
+#             if last_comma_index != -1:  # If a ',' is found, split at the comma
+#                 last_dot_index = last_comma_index
+#             else:  # If no ',' is found, look for the last whitespace
+#                 last_space_index = text.rfind(" ", start, end)
+#                 if last_space_index != -1:  # If a space is found, split at the space
+#                     last_dot_index = last_space_index
+#                 else:  # If no space is found, split at the max length
+#                     last_dot_index = end
+#
+#         # Add the chunk
+#         chunks.append(text[start:last_dot_index].strip())
+#         # Update the start to the new position
+#         start = last_dot_index + 1
+#
+#     return [chunk for chunk in chunks if chunk]  # Remove any empty chunks
+#
+# text = (
+#     "This is a long text. It contains multiple sentences, each separated by punctuation. "
+#     "If a period isn't found, the text should split at a comma, and if neither is present, it splits by spaces."
+# )
+#
+# max_length = 150
+# chunks = efficient_split_text_to_chunks2(text, max_length)
+#
+# for i, chunk in enumerate(chunks, 1):
+#     print(f"Chunk {i}: {chunk}")
