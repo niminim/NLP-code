@@ -31,23 +31,9 @@ c33 = '" He turned toward his workroom, the precious dragon scale imprisoned bet
 c33 = '" He turned toward his workroom, the precious dragon scale imprisoned between gnarled thumb and forefinger. "Get to work, Kharian. Now."  \nNew section - Mapshaker\'s eyes were closed. He felt much cooler than he had a few minutes ago. Wind tickled his ears and soothed the fire streaking throughout his body. He relaxed'
 
 
-import re
-def replace_newline_after_quote(input_text):
-    """
-    Replaces instances of '"\n' followed by a capital letter with '" '
-    and retains the capital letter.
-
-    Args:
-        input_text (str): The input text.
-
-    Returns:
-        str: The text with the pattern replaced.
-    """
-    return re.sub(r'"\n([A-Z])', r'" \1', input_text)
 
 input = '" Piling her parcels in a dry space, the assistant joined Myrthin, eyes searching the wooden floor.\nThe mage finally grunted in satisfaction and straightened, a tiny scale from the brass dragon balanced on the tip of one crooked finger. "Get someone to patch the roof well enough so the rest of the house won\'t flood while I\'m gone\n'
 
-text = replace_newline_after_quote(c31)
 
 
 input_text= 'Scourge of the Wicked Kendragon\nJanet Pack\n\n\n\n\n\n\n"But I was only… aaahhhh!"\nPropelled'
@@ -70,41 +56,19 @@ text1 = '\n\n\n\n\n\n\n\nPart One - Darkon'
 text2 = '\n\n\n\n\n\n\n\nPart Two - Oerth'
 text3 = '\n\n\n\n\n\n\n\nPart Three - Barovia'
 text4 = '\n\n\n\n\n\n\n\nPart Four - Darkon'
-folder = '/home/nim/King_of_the_Dead_by_scott_brick_350'
-tts.tts_to_file(text=text1, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/01_0-Part_One-Darkon.wav")
-tts.tts_to_file(text=text2, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/07_0-Part_Two-Oerth.wav")
-tts.tts_to_file(text=text3, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/18_0-Part_Three-Barovia.wav")
-tts.tts_to_file(text=text4, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/22_0-Part_Four-Darkon.wav")
+
+text11 = '\n\n\n\n\n\n\n\nPart One - Into The Past'
+text22 = '\n\n\n\n\n\n\n\nPart Two - The Final Search'
+text33 = '\n\n\n\n\n\n\n\nPart Three - The Coming of Necropolis'
+text_name = 'You are listening to Lord of the Necropolis. A Ravenloft novel, Written by Gene DeWees. Narrated by AI voice-cloning of Scott Brick'
+
+folder = '/home/nim/Lord_of_the_Necropolis_by_scott_brick_350'
+tts.tts_to_file(text=text11, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/01_0-Part_One-Into_The_Past.wav")
+tts.tts_to_file(text=text22, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/12_0-Part_Two-The_Final_Search.wav")
+tts.tts_to_file(text=text33, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/21_0-Part_Three-The_Coming_of_Necropolis.wav")
+# tts.tts_to_file(text=text4, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/22_0-Part_Four-Darkon.wav")
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+
+
 #############
 
-import tqdm
-from tools.create_models import *
-from tools.clean_text import *
-from tools.read_file import *
-from tools.split_text import *
-from tools.finalize_files import *
-
-file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
-folder = '/home/nim/Lord_of_the_Necropolis_by_scott_brick_350'
-
-tts_model = get_model(model_name ='xtts_v2')
-
-text = read_epub(file_path)
-text1 = text[-3100:-2100]
-print(text1)
-processed_text = process_text(text1)  # pay attention to paragraphs newlines (currently supports one and two)
-chapter_chunks = efficient_split_text_to_chunks(processed_text, max_length=350)
-
-# Generate audio and save the original text of each chunk
-for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):
-    print(chunk)
-    tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
-
-
-    # Concat parts to assemble the chapter
-    chapter_str = chapter_idx_str(chapter_idx, start_zero)
-    output_file = os.path.join(audio_dir, chapter_str + chapter_name + f".{audio_format}")
-    concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
-
-tts_model.tts_to_file(text=processed_text, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/0-Preface.wav")
-################

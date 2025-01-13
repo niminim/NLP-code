@@ -56,7 +56,7 @@ processed_substring = process_chunk_add_new_section(chapter_text[100:])
 chapter_text = chapter_text[:100] + processed_substring
 chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
 # chapter_chunks = split_text_by_sentences_nltk(chapter_text)
-chapter_chunks = efficient_split_text_to_chunks(chapter_text, max_length=chunk_size)
+chapter_chunks = split_text_into_chunks(chapter_text, max_chunk=chunk_size)
 
 # Process each chunk and generate audio
 for idx, chunk in enumerate(tqdm(chapter_chunks)):

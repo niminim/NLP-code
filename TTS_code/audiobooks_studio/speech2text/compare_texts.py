@@ -3,6 +3,11 @@ import re
 import numpy as np
 import json
 
+import sys
+project_root = os.path.abspath("/TTS_code")
+sys.path.append(project_root)
+from TTS_code.audiobooks_studio.book_chapters import *
+
 
 def open_text_file(file_path, encoding="utf-8"):
     """
@@ -154,47 +159,64 @@ def update_evaluation_data(evaluation_data, chapter, part, original, transcribed
 if __name__ == "__main__":
 
     base = "/home/nim"
-    book = "Lord_of_the_Necropolis_by_scott_brick_350" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
-    # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Lord_of_the_Necropolis_by_scott_brick_350
-    chapter = 'One' # Prologue, One
-    # chapter = 'Scourge_of_the_Wicked_Kendragon'
-    chapter = 'Preface' #
+    book_name = 'Lord_of_the_Necropolis'
+    book_dir = f"{book_name}_by_scott_brick_350" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
 
+    chapter = 'One' # Prologue, Oneת Scourge_of_the_Wicked_Kendragon
     part = '32'
 
-    book_path = os.path.join(base, book)
-    orig_text_files = get_sorted_text_files(os.path.join(book_path, "texts", "orig_chunks", chapter))
+    book_path = os.path.join(base, book_dir)
+    json_dir = os.path.join(book_path, "texts", "comparisons")
+    os.makedirs(json_dir, exist_ok=True)
+    orig_chunks_dir = f"{book_path}/texts/orig_chunks"
+    transcribed_dir = f"{book_path}/texts/transcriptions"
 
 
-    # Initialize the data structure
-    evaluation_data = {}
+    chapters = chapter_names[book_name]  # chapters we want to subscribe
 
-    for part in np.arange(1,len(orig_text_files)+1):
-        print('part: ', part)
-        original = open_text_file(f"{book_path}/texts/orig_chunks/{chapter}/part{part}.txt")
-        transcribed = open_text_file(f"{book_path}/texts/transcriptions/{chapter}/part{part}.txt")
+    for chapter in chapters:
+        if chapter in os.listdir(os.path.join(transcribed_dir)):
+            print(f"chapter: {chapter}")
+        else:
+            print(f"chapter: {chapter} - not in transcriptions")
+            break
 
-        # Normalize the texts
-        original_normalized = normalize_text(original)
-        transcribed_normalized = normalize_text(transcribed)
+        orig_text_files = get_sorted_text_files(os.path.join(book_path, "texts", "orig_chunks", chapter))
 
-        # Calculate WER and CER
-        wer = calculate_wer(original_normalized, transcribed_normalized)
-        cer = calculate_cer(original_normalized, transcribed_normalized)
+        # Initialize the data structure
+        evaluation_data = {}
 
-        print(f"WER: {wer:.2%}")
-        print(f"CER: {cer:.2%}")
-        update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer)
-        print('*******')
 
-        output_folder = '/home/nim'
-        filepath = os.path.join(output_folder, "necro_350.json")
+        for part in np.arange(1,len(orig_text_files)+1):
+            original = open_text_file(f"{book_path}/texts/orig_chunks/{chapter}/part{part}.txt")
+            transcribed = open_text_file(f"{book_path}/texts/transcriptions/{chapter}/part{part}.txt")
 
-        # Save with or without indent
-        with open(filepath, "w", encoding="utf-8") as file:
-            json.dump(evaluation_data, file,
-                      indent=4)  # Use `indent=4` for pretty formatting or remove it for compact JSON
+            json_file = f"{book_path}/texts/comparisons/{chapter}.json"
+            dir_path = os.path.dirname(json_file)
+            os.makedirs(dir_path, exist_ok=True)
 
-        print(f"JSON file saved at: {filepath}")
+            # Normalize the texts
+            original_normalized = normalize_text(original)
+            transcribed_normalized = normalize_text(transcribed)
+
+            # Calculate WER and CER
+            wer = calculate_wer(original_normalized, transcribed_normalized)
+            cer = calculate_cer(original_normalized, transcribed_normalized)
+            len_diff = len(original_normalized) - len(transcribed_normalized)
+
+
+            if cer*100>6.0 or len_diff>2:
+                print('part: ', part)
+                print(f"WER: {wer:.2%}")
+                print(f"CER: {cer:.2%}")
+                print(f"Diff (words): {len_diff}")
+                print('*******')
+
+            update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer)
+
+            # Save with or without indent
+            with open(json_file, "w", encoding="utf-8") as file:
+                json.dump(evaluation_data, file, indent=4)  # Use `indent=4` for pretty formatting or remove it for compact JSON
+            print(f"JSON file saved at: {json_file}")
 
 

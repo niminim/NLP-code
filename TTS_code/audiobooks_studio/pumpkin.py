@@ -96,7 +96,7 @@ os.makedirs(chapter_folder, exist_ok=True)
 
 
 chapter_text = process_text(text)  # pay attention to paragraphs newlines (currently supports one and two)
-chapter_chunks = split_text_into_chunks(chapter_text, max_length=chunk_size)
+chapter_chunks = split_text_into_chunks(chapter_text, max_chunk=chunk_size)
 
 
 # Process each chunk and generate audio

@@ -35,7 +35,7 @@ def split_text_into_chunks(text, max_chunk):
         # Move to the next chunk
         start = split_index
 
-    return chunks
+    return [chunk for chunk in chunks if chunk]
 
 
 # ok, but not good enough in splitting

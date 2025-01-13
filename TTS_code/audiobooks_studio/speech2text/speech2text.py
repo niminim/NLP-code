@@ -43,11 +43,9 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
         return
 
     # Create an output folder for transcriptions
-    output_folder = os.path.join(transcriptions_dir)
     os.makedirs(transcriptions_dir, exist_ok=True)
 
     # Loop through and transcribe each file
-
     for idx, wav_file in enumerate(tqdm(wav_files)):
     # for wav_file in wav_files:
         file_path = os.path.join(audio_dir, wav_file)
@@ -60,10 +58,10 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
             transcribed_text = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
 
             # Show the transcribed text in the console
-            print(f"\nTranscription for {wav_file}:\n{transcribed_text}\n")
+            print(f"\nTranscription for {audio_dir.split('/')[-1]} - {wav_file}:\n{transcribed_text}\n")
 
             # Save transcription to a text file
-            output_file = os.path.join(output_folder, f"{os.path.splitext(wav_file)[0]}.txt")
+            output_file = os.path.join(transcriptions_dir, f"{os.path.splitext(wav_file)[0]}.txt")
             with open(output_file, "w") as f:
                 f.write(transcribed_text)
 
@@ -71,13 +69,13 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
             print(f"Error processing {wav_file}: {e}")
 
 
-##############################
-
+############################## One chapter
 
 base = '/home/nim/'
-book = 'Lord_of_the_Necropolis_by_scott_brick_100' # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
+book_name = 'Lord_of_the_Necropolis'
+book_dir = f"{book_name}_by_scott_brick_100" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
 # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Forged_in_Cold_by_ralph_lister_350,
-book_path = os.path.join(base, book)
+book_path = os.path.join(base, book_dir)
 
 chapter = "One"  # Prologue, One
 # chapter = "Scourge_of_the_Wicked_Kendragon"
@@ -87,5 +85,32 @@ model_name= 'whisper'
 model, processor = get_model(model_name)
 
 audio_dir = os.path.join(book_path, "audio", chapter)
-transcriptions_dir = os.path.join(base, book, "texts", "transcriptions", chapter)
+transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter)
 transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
+#######################
+
+
+###################### Multipile chapters
+import os
+import sys
+project_root = os.path.abspath("/TTS_code")
+sys.path.append(project_root)
+from TTS_code.audiobooks_studio.book_chapters import *
+
+base = '/home/nim/'
+book_name = 'Lord_of_the_Necropolis'
+book_dir = f"{book_name}_by_scott_brick_350"
+book_path = os.path.join(base, book_dir)
+
+chapters = chapter_names[book_name] # chapters we want to subscribe
+
+model, processor = get_model(model_name='whisper')
+
+for chapter_idx, chapter in enumerate(tqdm(chapters)):
+
+    audio_dir = os.path.join(book_path, "audio", chapter)
+    transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter)
+    transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
+
+
+
