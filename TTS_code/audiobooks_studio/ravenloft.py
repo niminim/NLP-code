@@ -44,13 +44,13 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-for chapter_idx in [26]:
+for chapter_idx in [21,22,23,24,25]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)
     os.makedirs(chapter_audio_dir, exist_ok=True)
 
-    # Process each chunk
+    # # Process each chunk
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
     chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
@@ -70,9 +70,9 @@ for chapter_idx in [26]:
         filepath = os.path.join(chapter_audio_dir, f"part{idx + 1}.wav")
         print(chunk)
         tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
-
-        # if idx == 8:
-        #     break
+    #
+    #     # if idx == 8:
+    #     #     break
 
     # Concat parts to assemble the chapter
     chapter_str = chapter_idx_str(chapter_idx, start_zero)

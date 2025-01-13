@@ -155,6 +155,13 @@ def update_evaluation_data(evaluation_data, chapter, part, original, transcribed
         "CER": f"{cer:.2%}"
     }
 
+
+def update_parts_to_correct(chapter, part):
+    chapter_key = f"{chapter}"
+    if chapter_key not in to_correct:
+        to_correct[chapter_key] = []
+    to_correct[chapter_key].append(part)
+
 # Example Usage
 if __name__ == "__main__":
 
@@ -171,8 +178,9 @@ if __name__ == "__main__":
     orig_chunks_dir = f"{book_path}/texts/orig_chunks"
     transcribed_dir = f"{book_path}/texts/transcriptions"
 
-
     chapters = chapter_names[book_name]  # chapters we want to subscribe
+
+    to_correct = {}
 
     for chapter in chapters:
         if chapter in os.listdir(os.path.join(transcribed_dir)):
@@ -185,7 +193,6 @@ if __name__ == "__main__":
 
         # Initialize the data structure
         evaluation_data = {}
-
 
         for part in np.arange(1,len(orig_text_files)+1):
             original = open_text_file(f"{book_path}/texts/orig_chunks/{chapter}/part{part}.txt")
@@ -202,15 +209,16 @@ if __name__ == "__main__":
             # Calculate WER and CER
             wer = calculate_wer(original_normalized, transcribed_normalized)
             cer = calculate_cer(original_normalized, transcribed_normalized)
-            len_diff = len(original_normalized) - len(transcribed_normalized)
+            len_diff = len(original_normalized.split()) - len(transcribed_normalized.split())
 
-
-            if cer*100>6.0 or len_diff>2:
-                print('part: ', part)
-                print(f"WER: {wer:.2%}")
-                print(f"CER: {cer:.2%}")
-                print(f"Diff (words): {len_diff}")
-                print('*******')
+            if part != 1:
+                if (cer * 100 > 6.0) or (len_diff > 2):
+                    print('part: ', part)
+                    print(f"WER: {wer:.2%}")
+                    print(f"CER: {cer:.2%}")
+                    print(f"Diff (words): {len_diff}")
+                    update_parts_to_correct(chapter, part)
+                    print('*******')
 
             update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer)
 
@@ -218,5 +226,43 @@ if __name__ == "__main__":
             with open(json_file, "w", encoding="utf-8") as file:
                 json.dump(evaluation_data, file, indent=4)  # Use `indent=4` for pretty formatting or remove it for compact JSON
             print(f"JSON file saved at: {json_file}")
+
+
+
+###############################
+from TTS_code.audiobooks_studio.tools.create_models import *
+
+tts_model = get_model()
+
+ref = 'scott_brick'
+
+# Iterate through each chapter and its corresponding parts
+for chapter, parts in to_correct.items():
+    print(f"Chapter: {chapter}")
+    for part in parts:
+        print(f"  Part: {part}")
+
+        chunk_text_path = os.path.join(orig_chunks_dir, chapter,f"part{part}.txt")
+        print(chunk_text_path)
+        try:
+            with open(chunk_text_path, 'r') as file:
+                # Read the content of the file
+                chunk = file.read()
+                print(chunk)  # Print the content to verify
+        except FileNotFoundError:
+            print(f"Error: The file '{chunk_text_path}' does not exist.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        filepath = f"/home/nim/{chapter}_part{part}.wav"
+        tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
+
+
+
+
+
+
+
+
 
 
