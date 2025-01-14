@@ -61,12 +61,34 @@ def add_space_after_nth_newline_block(text, n, min_newlines=3):
 
     return text
 
-def process_chunk_add_new_section(chunk):
+# works well
+# def process_chunk_add_new_section(chunk, size): # if the illusatraion is small could be 2 \n
+#     """
+#     Cleans a single text chunk by applying specific transformations.
+#     - Example: Replace sequences of 4+ newlines with 'New section - '.
+#     """
+#     return re.sub(r'\n{4,}', ' New section - ', chunk)
+# In order to adjust \n size can use.
+#     pattern = rf'\n{{{size},}}'  # Dynamic regex pattern based on size
+#     return re.sub(pattern, ' New section - ', chunk)
+
+# Not necessary at all
+def process_chunk_add_new_section(chunk, size=4):
     """
     Cleans a single text chunk by applying specific transformations.
-    - Example: Replace sequences of 4+ newlines with 'New section - '.
+    - Replaces sequences of 'size' or more newlines (standard or typographic) with 'New section - '.
+    - Supports both standard (\n) and typographic (e.g., \r\n with spaces) patterns.
+
+    Parameters:
+    - chunk: The input text chunk to process.
+    - size: The minimum number of consecutive newlines to trigger a replacement.
+
+    Returns:
+    - The transformed text chunk.
     """
-    return re.sub(r'\n{4,}', ' New section - ', chunk)
+    # Match both standard and typographic newline sequences
+    pattern = rf'(?:\s*\r?\n\s*){{{size},}}'
+    return re.sub(pattern, ' New section - ', chunk)
 
 
 def process_comma_quote(text):

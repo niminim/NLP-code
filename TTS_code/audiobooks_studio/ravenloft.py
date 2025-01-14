@@ -25,7 +25,7 @@ file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
 epub_content = read_epub(file_path)
 
 ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, emilia_clarke, perdita_weeks, scott_brick, john_lee2
-chunk_size = 350
+chunk_size = 351
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
@@ -44,7 +44,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-for chapter_idx in [21,22,23,24,25]:
+for chapter_idx in [0]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)
@@ -54,7 +54,7 @@ for chapter_idx in [21,22,23,24,25]:
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
     chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
-    processed_substring = process_chunk_add_new_section(chapter_text[100:])
+    processed_substring = process_chunk_add_new_section(chapter_text[100:], size=4)
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
     chapter_chunks = split_text_into_chunks(chapter_text, max_chunk=chunk_size)

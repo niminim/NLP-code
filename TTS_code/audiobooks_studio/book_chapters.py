@@ -26,3 +26,10 @@ chapter_names['Lord_of_the_Necropolis'] = ['Prelude', 'One', 'Two', 'Three', 'Fo
             'Epilogue', 'Back Cover'] # Parts appears at the end! only used as a stop point
 
 
+chapter_names['To_Sleep_With_Evil'] = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven',
+            'Interlude', 'Twelve', 'Thirteen', 'Fourteen',
+            'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen',
+            'Epilogue', 'Back Cover'] # Parts appears at the end! only used as a stop point
+
+
+

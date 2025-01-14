@@ -69,27 +69,6 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
             print(f"Error processing {wav_file}: {e}")
 
 
-############################## One chapter
-
-base = '/home/nim/'
-book_name = 'Lord_of_the_Necropolis'
-book_dir = f"{book_name}_by_scott_brick_100" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
-# The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Forged_in_Cold_by_ralph_lister_350,
-book_path = os.path.join(base, book_dir)
-
-chapter = "One"  # Prologue, One
-# chapter = "Scourge_of_the_Wicked_Kendragon"
-chapter = "Preface"
-
-model_name= 'whisper'
-model, processor = get_model(model_name)
-
-audio_dir = os.path.join(book_path, "audio", chapter)
-transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter)
-transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
-#######################
-
-
 ###################### Multipile chapters
 import os
 import sys
@@ -112,5 +91,26 @@ for chapter_idx, chapter in enumerate(tqdm(chapters)):
     transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter)
     transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
 
+
+
+############################## One chapter
+
+# base = '/home/nim/'
+# book_name = 'Lord_of_the_Necropolis'
+# book_dir = f"{book_name}_by_scott_brick_100" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
+# # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350, Forged_in_Cold_by_ralph_lister_350,
+# book_path = os.path.join(base, book_dir)
+#
+# chapter = "One"  # Prologue, One
+# # chapter = "Scourge_of_the_Wicked_Kendragon"
+# chapter = "Preface"
+#
+# model_name= 'whisper'
+# model, processor = get_model(model_name)
+#
+# audio_dir = os.path.join(book_path, "audio", chapter)
+# transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter)
+# transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
+#######################
 
 

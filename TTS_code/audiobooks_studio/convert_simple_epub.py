@@ -1,5 +1,6 @@
 import os
 from tqdm import tqdm
+import time
 
 import sys
 project_root = os.path.abspath("/home/nim/venv/NLP-code/TTS_code/audiobooks_studio")
@@ -31,6 +32,7 @@ def split_text_by_sentences_nltk(text):
 # Path to your EPUB file
 file_path = '/home/nim/Downloads/Forged_In_Cold-Diane.epub'
 file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
+file_path = '/home/nim/Downloads/To_Sleep_With_Evil.epub'
 epub_content = read_epub(file_path)
 
 ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, scott_brick,
@@ -39,20 +41,21 @@ audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'Lord_of_the_Necropolis'
+book_name = 'To_Sleep_With_Evil'
 book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-chapter_text = epub_content[-3100:-2100] # for Forged in cold  epub_content[:-283]
-chapter_name = 'Preface'.replace(' ', '_')
+# chapter_text = epub_content[14:859] # for Forged in cold  epub_content[:-283]
+
+chapter_name = 'Book'.replace(' ', '_')
 chapter_audio_dir =  os.path.join(book_path, 'audio', chapter_name)
 os.makedirs(chapter_audio_dir, exist_ok=True)
 
 processed_substring = remove_first_newline_block(chapter_text[:50])
 chapter_text = processed_substring + chapter_text[50:]
 chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
-processed_substring = process_chunk_add_new_section(chapter_text[100:])
+processed_substring = process_chunk_add_new_section(chapter_text[100:], size=2)
 chapter_text = chapter_text[:100] + processed_substring
 chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
 # chapter_chunks = split_text_by_sentences_nltk(chapter_text)
@@ -66,6 +69,10 @@ for idx, chunk in enumerate(tqdm(chapter_chunks)):
     print(chunk)
     tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
+    # if idx == 20:
+    #     break
+    if idx % 150 == 0 and idx != 0:  # Check if the index is a multiple of 100
+        time.sleep(15)
 
 # Concat parts to assemble the chapter
 chapter_str = chapter_idx_str(chapter_idx=0, start_zero=True)
@@ -73,4 +80,44 @@ output_file = os.path.join(audio_dir, chapter_str + chapter_name + f".{audio_for
 concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
 
 
-####
+#### To deal with to sleep with evil
+
+# Assuming epub_content contains the text
+text = epub_content[3900:-283]
+
+# Results to store changes for each occurrence
+results = []
+
+# Function to replace \n blocks with chapter labels and capture results
+def replace_with_chapter(match):
+    global chapter_counter
+    start, end = match.start(), match.end()  # Match start and end positions
+    if chapter_counter == 0:
+        replacement = ' Prologue '  # The first block is the prologue
+    elif chapter_counter == 20:
+        replacement = ' Epilogue '  # The last block is the epilogue
+    else:
+        replacement = f' Chapter {chapter_counter} '  # Subsequent blocks are numbered chapters
+    chapter_counter += 1
+
+    # Capture the replacement and 20 characters after the replacement
+    snippet_start = start  # Start from where the \n block started
+    snippet_end = min(len(text), end + len(replacement) + 20)  # 20 chars after the replacement
+    snippet = text[snippet_start:snippet_end].replace("\n", "\\n")  # For better readability
+
+    # Store the result
+    results.append((start, replacement, snippet))
+    return replacement
+
+# Initialize a counter to track the chapter number
+chapter_counter = 0
+
+# Replace blocks of more than 5 newlines with the respective labels
+updated_text = re.sub(r'(?:\n){5,}', replace_with_chapter, text)
+
+# Display results
+for start, replacement, snippet in results:
+    print(f"Replaced block starting at {start} with -> {replacement}")
+    print(f"Snippet: {snippet}\n")
+
+chapter_text = updated_text

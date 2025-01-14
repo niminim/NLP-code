@@ -62,7 +62,7 @@ text22 = '\n\n\n\n\n\n\n\nPart Two - The Final Search'
 text33 = '\n\n\n\n\n\n\n\nPart Three - The Coming of Necropolis'
 text_name = 'You are listening to Lord of the Necropolis. A Ravenloft novel, Written by Gene DeWees. Narrated by AI voice-cloning of Scott Brick'
 
-folder = '/home/nim/Lord_of_the_Necropolis_by_scott_brick_350'
+folder = '/home/nim/To_Sleep_With_Evil'
 tts.tts_to_file(text=text11, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/01_0-Part_One-Into_The_Past.wav")
 tts.tts_to_file(text=text22, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/12_0-Part_Two-The_Final_Search.wav")
 tts.tts_to_file(text=text33, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/21_0-Part_Three-The_Coming_of_Necropolis.wav")
@@ -70,5 +70,10 @@ tts.tts_to_file(text=text33, speaker_wav="/home/nim/Documents/scott_brick.wav", 
 tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
+folder = '/home/nim/To_Sleep_With_Evil'
+text_name = 'You are listening to the book To Sleep With Evil. A Ravenloft novel, Written by Andrial Cardarelle. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+
+epub_content[14:859]
 #############
 

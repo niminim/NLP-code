@@ -60,7 +60,7 @@ for chapter_idx in [8]:
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
     chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
-    processed_substring = process_chunk_add_new_section(chapter_text[100:])
+    processed_substring = process_chunk_add_new_section(chapter_text[100:], size=4)
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently su
     chapter_chunks = split_text_into_chunks(chapter_text, max_length=chunk_size)
