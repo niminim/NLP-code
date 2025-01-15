@@ -58,7 +58,7 @@ for voice in tqdm(kokoro.get_voices(), desc="Processing voices"):
 
 
 voice = 'af_sarah'
-for idx in tqdm(range(1), desc="Processing voices"):
+for idx in tqdm(range(10), desc="Processing voices"):
     kokoro = Kokoro("/home/nim/Downloads/kokoro-v0_19.onnx", "/home/nim/Downloads/voices.json")
     samples, sample_rate = kokoro.create(
         text=text, voice=voice, speed=1.0, lang="en-us"
