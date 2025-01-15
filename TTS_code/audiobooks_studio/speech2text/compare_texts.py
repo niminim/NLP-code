@@ -1,6 +1,4 @@
 import os
-import re
-import numpy as np
 import json
 
 import sys
@@ -10,15 +8,15 @@ from TTS_code.audiobooks_studio.book_chapters import *
 from TTS_code.audiobooks_studio.speech2text.compate_text_helper import *
 
 
-# Find problems
+# Find problems across all chapters
 if __name__ == "__main__":
 
-    base = "/home/nim"
-    book_name = 'Lord_of_the_Necropolis'
-    book_dir = f"{book_name}_by_scott_brick_350" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
+    ref = 'scott_brick'
 
-    chapter = 'One' # Prologue, Oneת Scourge_of_the_Wicked_Kendragon
-    part = '32'
+    base = "/home/nim"
+    book_name = 'To_Sleep_With_Evil'  # To_Sleep_With_Evil
+    book_dir = f"{book_name}_by_{ref}_350" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
+
 
     book_path = os.path.join(base, book_dir)
     json_dir = os.path.join(book_path, "texts", "comparisons")
@@ -27,6 +25,7 @@ if __name__ == "__main__":
     transcribed_dir = f"{book_path}/texts/transcriptions"
 
     chapters = chapter_names[book_name]  # chapters we want to subscribe
+    chapters = ['Book']
 
     to_correct = {}
 
@@ -49,6 +48,8 @@ if __name__ == "__main__":
 
             json_file = f"{book_path}/texts/comparisons/{chapter}.json"
             os.makedirs(os.path.dirname(json_file), exist_ok=True)
+            update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer)
+
 
             if part != 1:
                 if (cer * 100 > 6.0) or (len_diff >= 2):
@@ -58,8 +59,6 @@ if __name__ == "__main__":
                     print(f"Diff (words): {len_diff}")
                     update_parts_to_correct(to_correct, chapter, part)
                     print('*******')
-
-            update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer)
 
         # Save with or without indent
         with open(json_file, "w", encoding="utf-8") as file:
@@ -76,8 +75,7 @@ from TTS_code.audiobooks_studio.speech2text.STT_helper import *
 tts_model = get_model(model_name ='xtts_v2')
 model, processor = get_STT_model(model_name='whisper')
 
-
-ref = 'scott_brick'
+reps = 3
 
 # Iterate through each chapter and its corresponding parts
 for chapter, parts in to_correct.items():
@@ -89,15 +87,21 @@ for chapter, parts in to_correct.items():
         chunk = open_text_file(chunk_text_path)
 
 
-        filepath = f"{base}/corrections/{chapter}/part{part}.wav"
-        os.makedirs(os.path.dirname(filepath),exist_ok=True)
-        tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
+        for rep in np.arange(1,reps+1):
+            print(rep)
+            filepath = f"{base}/corrections_{book_name}/{chapter}/part{part}_{rep}.wav"
+            os.makedirs(os.path.dirname(filepath),exist_ok=True)
+            tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
 
-        ######## Transcribe
-        audio_dir = os.path.join(base,"corrections", chapter)
-        transcriptions_dir = audio_dir
-        transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
+    ######## Transcribe
+    audio_dir = os.path.join(base,f"corrections_{book_name}", chapter)
+    transcriptions_dir = audio_dir
+    transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
+
+
+
+
 
 
 

@@ -1,5 +1,4 @@
 import os
-import torch
 import librosa
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 from tqdm import tqdm
@@ -28,6 +27,8 @@ def preprocess_audio(processor, file_path):
 
 
 def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
+    # transcribes all audio files in the folder
+
     # Ensure the folder exists
     if not os.path.exists(audio_dir):
         print(f"Folder not found: {audio_dir}")
@@ -67,3 +68,4 @@ def transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir):
 
         except Exception as e:
             print(f"Error processing {wav_file}: {e}")
+
