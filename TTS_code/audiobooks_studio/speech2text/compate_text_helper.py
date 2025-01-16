@@ -1,6 +1,18 @@
 import os
 import re
 import numpy as np
+import json
+
+
+def get_dirs(base, book_name, ref):
+    book_dir = f"{book_name}_by_{ref}_350" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
+    book_path = os.path.join(base, book_dir)
+    json_dir = os.path.join(book_path, "texts", "comparisons")
+    os.makedirs(json_dir, exist_ok=True)
+    orig_chunks_dir = f"{book_path}/texts/orig_chunks"
+    transcribed_dir = f"{book_path}/texts/transcriptions"
+
+    return book_path, json_dir, orig_chunks_dir, transcribed_dir
 
 
 def open_text_file(file_path, encoding="utf-8"):
@@ -25,6 +37,31 @@ def open_text_file(file_path, encoding="utf-8"):
         return None
     except Exception as e:
         print(f"An error occurred: {e}")
+
+
+def read_json_file(file_path):
+    """
+    Reads a JSON file and returns its content as a Python dictionary.
+
+    Args:
+        file_path (str): Path to the JSON file.
+
+    Returns:
+        dict: The content of the JSON file as a Python dictionary.
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            return data
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' was not found.")
+    except PermissionError:
+        print(f"Error: Permission denied for file '{file_path}'.")
+    except json.JSONDecodeError as e:
+        print(f"Error: Failed to decode JSON from file '{file_path}'. Details: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred while reading the file '{file_path}': {e}")
+    return None
 
 
 
@@ -142,12 +179,12 @@ def compare_texts(original, transcribed):
     # Calculate WER, CER, and the length difference
     wer = calculate_wer(original_normalized, transcribed_normalized)
     cer = calculate_cer(original_normalized, transcribed_normalized)
-    len_diff = abs(len(original_normalized.split()) - len(transcribed_normalized.split()))
+    len_diff = len(original_normalized.split()) - len(transcribed_normalized.split())
 
     return original_normalized, transcribed_normalized, wer, cer, len_diff
 
 
-def update_evaluation_data(evaluation_data, chapter, part, original, transcribed, wer, cer):
+def update_evaluation_data(evaluation_data, chapter, part, original, transcribed, wer, cer, len_diff):
     """
     Updates the evaluation data dictionary with the results for a specific part of a chapter.
     """
@@ -161,6 +198,7 @@ def update_evaluation_data(evaluation_data, chapter, part, original, transcribed
         "transcribed_text": transcribed,
         "original_text_len": len(original.split()),
         "transcribed_text_len": len(transcribed.split()),
+        "len_diff" : len_diff,
         "WER": f"{wer:.2%}",
         "CER": f"{cer:.2%}"
     }
@@ -171,3 +209,53 @@ def update_parts_to_correct(to_correct, chapter, part):
     if chapter_key not in to_correct:
         to_correct[chapter_key] = []
     to_correct[chapter_key].append(part)
+
+
+def find_files_with_prefix_and_format(folder_path, prefix, file_format):
+    """
+    Find all files in a folder that start with a specific prefix and have a specific file format.
+
+    Args:
+        folder_path (str): Path to the folder to search.
+        prefix (str): Prefix that the files should start with.
+        file_format (str): File extension (e.g., ".txt", ".csv") to match.
+
+    Returns:
+        list: List of full file paths that match the specified prefix and file format.
+    """
+    matching_files = []
+
+    # Iterate through all files in the folder
+    for file_name in os.listdir(folder_path):
+        # Check if the file starts with the prefix and ends with the specified file format
+        if file_name.startswith(prefix) and file_name.endswith(file_format):
+            # Add the full path to the list
+            matching_files.append(os.path.join(folder_path, file_name))
+
+    return matching_files
+
+
+def get_sorted_part_numbers(folder_path):
+    """
+    Extract unique part numbers (e.g., '119') from filenames in the specified folder
+    and order them numerically.
+
+    Args:
+        folder_path (str): Path to the folder containing the files.
+
+    Returns:
+        list: A sorted list of unique part numbers as integers.
+    """
+    part_numbers = set()  # Use a set to ensure uniqueness
+
+    # Regular expression to match part names (e.g., 'part119') and extract the number
+    part_pattern = re.compile(r"^part(\d+)")
+
+    # Iterate through all files in the folder
+    for file_name in os.listdir(folder_path):
+        match = part_pattern.match(file_name)  # Match the part name and extract the number
+        if match:
+            part_numbers.add(int(match.group(1)))  # Extract the number and convert to integer
+
+    # Return the sorted list of part numbers
+    return sorted(part_numbers)
