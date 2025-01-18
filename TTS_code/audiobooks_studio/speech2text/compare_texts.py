@@ -20,7 +20,7 @@ if __name__ == "__main__":
     chapters = chapter_names[book_name]  # chapters we want to subscribe
     chapters = ['Book']
 
-    to_correct = {}
+    to_correct = {} # includes the parts to correct (of each chapter)
 
     for chapter in chapters:
         if chapter in os.listdir(os.path.join(transcribed_dir)):
@@ -29,6 +29,7 @@ if __name__ == "__main__":
             print(f"chapter: {chapter} - not in transcriptions")
             break
 
+        # get the ordered (parts) transcription texts files
         orig_text_files = get_sorted_text_files(os.path.join(book_path, "texts", "orig_chunks", chapter))
 
         evaluation_data = {} # Initialize the data structure
@@ -36,20 +37,21 @@ if __name__ == "__main__":
         for part in np.arange(1,len(orig_text_files)+1):
             original = open_text_file(f"{book_path}/texts/orig_chunks/{chapter}/part{part}.txt")
             transcribed = open_text_file(f"{book_path}/texts/transcriptions/{chapter}/part{part}.txt")
-            original_normalized, transcribed_normalized, wer, cer, len_diff = compare_texts(original, transcribed)
+            compare_texts_res = compare_texts(original, transcribed)
+
 
             json_file = f"{book_path}/texts/comparisons/{chapter}.json"
             os.makedirs(os.path.dirname(json_file), exist_ok=True)
-            update_evaluation_data(evaluation_data, chapter, part, original_normalized, transcribed_normalized, wer, cer, len_diff)
+            update_evaluation_data(evaluation_data, chapter, part, compare_texts_res)
 
             # define rules for plausible problematic parts
             if part != 1:
-                if (cer * 100 > 6.0) or (abs(len_diff) >= 2):
+                if (compare_texts_res['CER'] * 100 > 6.0) or (abs(compare_texts_res['len_diff']) >= 2):
                     print('part: ', part)
-                    print(f"WER: {wer:.2%}")
-                    print(f"CER: {cer:.2%}")
-                    print(f"Diff (words): {len_diff}")
-                    update_parts_to_correct(to_correct, chapter, part)
+                    print(f"WER: {compare_texts_res['WER']:.2%}")
+                    print(f"CER: {compare_texts_res['CER']:.2%}")
+                    print(f"Diff (words): {compare_texts_res['len_diff']}")
+                    update_parts_to_correct(to_correct, chapter, part) # add the part to "to_correct" dict
                     print('*******')
 
         # Save with or without indent
@@ -67,7 +69,7 @@ from TTS_code.audiobooks_studio.speech2text.STT_helper import *
 tts_model = get_model(model_name ='xtts_v2')
 model, processor = get_STT_model(model_name='whisper')
 
-reps = 2
+reps = 2 # number of repetitions
 
 # Iterate through each chapter and its corresponding parts
 for chapter, parts in to_correct.items():
@@ -91,38 +93,52 @@ for chapter, parts in to_correct.items():
 
 
 ########### Choose best repetitions
+fix_chapters_stats = {} # here we store the suspected parts, and add to that the replaced parts
+
 for chapter in chapters:
     print(chapter)
+
+    fix_chapters_stats[chapter] = {}
     orig_json_path = os.path.join(json_dir, f"{chapter}.json")
     orig_chapter_stats = read_json_file(orig_json_path)[f"chapter {chapter}"]
+    fix_chapter_stats = {} # here we store the suspected parts (from all chapters), and add to that the replaced parts
+    fix_chapters_stats[chapter] = {} # for a specif chapter (here we store all the relevant data to suspected parts)
+
 
     chapter_fix_dir = os.path.join(base,f"corrections_{book_name}", chapter)
     fix_part_nums = get_sorted_part_numbers(chapter_fix_dir)
 
+
     for part in fix_part_nums:
-        fix_parts_stats = {}
+        fix_chapters_stats[chapter][part] = {}
 
         orig_part_stats = orig_chapter_stats[f"Part {part}"]
-        original = open_text_file(f"{book_path}/texts/orig_chunks/{chapter}/part{part}.txt")
+        original_chunk_norm = orig_part_stats['original_text']
+        orig_transcribed_nom = orig_part_stats['transcribed_text']
 
         fix_chapter_dir = os.path.join(base, f"corrections_{book_name}", chapter)
         fix_transcribed_paths = find_files_with_prefix_and_format(folder_path=fix_chapter_dir, prefix=f"part{part}", file_format=".txt")
 
-        for rep_idx, transcribed_path in enumerate(fix_transcribed_paths):
-            transcribed = open_text_file(transcribed_path)
-            original_normalized, transcribed_normalized, wer, cer, len_diff = compare_texts(original, transcribed)
-            fix_parts_stats[rep_idx+1] = {'WER': f"{wer:.2%}", 'CER': f"{cer:.2%}", 'len_diff': len_diff}
+        for rep_idx, fix_transcribed_path in enumerate(fix_transcribed_paths):
+            fix_chapters_stats[chapter][part][rep_idx+1] = {}
+
+            fixed_transcribed = open_text_file(fix_transcribed_path)
+            fix_compare_texts_res = compare_texts(original_chunk_norm, fixed_transcribed)
+            update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_compare_texts_res, orig_part_stats)
 
             print('part: ', part)
-            print(f"WER: {wer:.2%}")
-            print(f"CER: {cer:.2%}")
-            print(f"Diff (words): {len_diff}")
-            print('*******')
+            print(f"WER: {fix_compare_texts_res['WER']:.2%}")
+            print(f"CER: {fix_compare_texts_res['CER']:.2%}")
+            print(f"Diff (words): {fix_compare_texts_res['len_diff']}")
 
-            if abs(len_diff)<abs(orig_part_stats['len_diff']):
 
-                 cer = float(cer.strip('%'))
-                 wer = float(wer.strip('%'))
+            # Use raw `wer` and `cer` variables for comparison
+            if abs(fix_compare_texts_res['len_diff']) < abs(orig_part_stats['len_diff']):
+                print(f"Improvement")
+            print('***')
+        print('******')
+
+
 
 
 

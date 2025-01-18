@@ -181,10 +181,16 @@ def compare_texts(original, transcribed):
     cer = calculate_cer(original_normalized, transcribed_normalized)
     len_diff = len(original_normalized.split()) - len(transcribed_normalized.split())
 
-    return original_normalized, transcribed_normalized, wer, cer, len_diff
+    # Return results in a dictionary
+    return {
+        "original_normalized": original_normalized,
+        "transcribed_normalized": transcribed_normalized,
+        "WER": wer,
+        "CER": cer,
+        "len_diff": len_diff,
+    }
 
-
-def update_evaluation_data(evaluation_data, chapter, part, original, transcribed, wer, cer, len_diff):
+def update_evaluation_data(evaluation_data, chapter, part, compare_texts_res):
     """
     Updates the evaluation data dictionary with the results for a specific part of a chapter.
     """
@@ -194,13 +200,13 @@ def update_evaluation_data(evaluation_data, chapter, part, original, transcribed
 
     # Add or update the part data
     evaluation_data[f"chapter {chapter}"][f"Part {part}"] = {
-        "original_text": original,
-        "transcribed_text": transcribed,
-        "original_text_len": len(original.split()),
-        "transcribed_text_len": len(transcribed.split()),
-        "len_diff" : len_diff,
-        "WER": f"{wer:.2%}",
-        "CER": f"{cer:.2%}"
+        "original_text": compare_texts_res['original_normalized'],
+        "transcribed_text": compare_texts_res['transcribed_normalized'],
+        "original_text_len": len(compare_texts_res['original_normalized'].split()),
+        "transcribed_text_len": len(compare_texts_res['transcribed_normalized'].split()),
+        "len_diff" :  compare_texts_res['len_diff'],
+        "WER": f"{compare_texts_res['WER']:.2%}",
+        "CER": f"{compare_texts_res['CER']:.2%}"
     }
 
 
@@ -259,3 +265,17 @@ def get_sorted_part_numbers(folder_path):
 
     # Return the sorted list of part numbers
     return sorted(part_numbers)
+
+
+def update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_compare_texts_res, orig_part_stats):
+    fix_chapters_stats[chapter][part][rep_idx + 1] = {
+        'original_text': orig_part_stats['original_text'],
+        'transcribed_text': orig_part_stats['transcribed_text'],
+        'fixed_transcribed_text': fix_compare_texts_res['transcribed_normalized'],
+        "original_text_len": orig_part_stats['original_text_len'],
+        "transcribed_text_len": orig_part_stats['transcribed_text_len'],
+        "fix_transcribed_text_len": len(fix_compare_texts_res['transcribed_normalized'].split()),
+        'WER': f"{fix_compare_texts_res['WER']:.2%}",
+        'CER': f"{fix_compare_texts_res['CER']:.2%}",
+        'len_diff': fix_compare_texts_res['len_diff']
+    }
