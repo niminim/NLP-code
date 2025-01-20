@@ -1,5 +1,4 @@
 import os
-import json
 
 import sys
 project_root = os.path.abspath("/TTS_code")
@@ -93,7 +92,6 @@ for chapter, parts in to_correct.items():
 
 
 ########### Choose best repetitions
-import pandas as pd
 fix_chapters_stats = {} # here we store the suspected parts, and add to that the replaced parts
 
 for chapter in chapters:
@@ -121,7 +119,7 @@ for chapter in chapters:
         fix_transcribed_paths = find_files_with_prefix_and_format(folder_path=fix_chapter_dir, prefix=f"part{part}", file_format=".txt")
 
         # Collect data for the table
-        table_data = []
+        stats_table = []
 
         for rep_idx, fix_transcribed_path in enumerate(fix_transcribed_paths):
             fix_chapters_stats[chapter][part][rep_idx+1] = {}
@@ -131,12 +129,7 @@ for chapter in chapters:
             update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_compare_texts_res, orig_part_stats)
 
             # Add row to the table
-            table_data.append({
-                "rep_idx": rep_idx + 1,
-                "WER": fix_compare_texts_res["WER"],
-                "CER": fix_compare_texts_res["CER"],
-                "len_diff": fix_compare_texts_res["len_diff"]
-            })
+            update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res)
 
             print(f"part: {part}, rep: {rep_idx+1}" )
             print(f"WER: {fix_compare_texts_res['WER']:.2%}")
@@ -148,9 +141,11 @@ for chapter in chapters:
             if abs(fix_compare_texts_res['len_diff']) < abs(orig_part_stats['len_diff']):
                 print(f"Improvement")
             print('***')
+        sort_stats_table(fix_chapters_stats, stats_table, chapter, part)
 
-        save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir)
         print('******')
+    save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir)
+
 
 
 

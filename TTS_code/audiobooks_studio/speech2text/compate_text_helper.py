@@ -1,6 +1,7 @@
 import os
 import re
 import numpy as np
+import pandas as pd
 import json
 
 
@@ -281,13 +282,43 @@ def update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_co
     }
 
 
+def update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res):
+    stats_table.append({
+        "rep_idx": rep_idx + 1,
+        "WER": fix_compare_texts_res["WER"],
+        "CER": fix_compare_texts_res["CER"],
+        "len_diff": fix_compare_texts_res["len_diff"]
+    })
+
+
+def sort_stats_table(fix_chapters_stats, stats_table, chapter, part):
+    # Create a DataFrame for sorting
+    df = pd.DataFrame(stats_table)
+
+    # Add a column for the absolute value of len_diff
+    df["abs_len_diff"] = df["len_diff"].abs()
+
+    # Sort by abs_len_diff (ascending), then CER, WER, and rep_idx
+    sorted_df = df.sort_values(by=["abs_len_diff", "CER", "WER", "rep_idx"], ascending=True)
+
+    # Drop the helper column
+    sorted_df = sorted_df.drop(columns=["abs_len_diff"])
+
+    # Print the sorted table
+    print(f"Sorted Table for Chapter {chapter}, Part {part}:")
+    print(sorted_df)
+
+    # Store the sorted DataFrame for this part in fix_chapters_stats
+    fix_chapters_stats[chapter][part]["stats_table"] = sorted_df
+
+
 def save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir):
     # Convert DataFrames in fix_chapters_stats to dictionaries
     for chapter, parts in fix_chapters_stats.items():
         for part, part_data in parts.items():
-            if "table" in part_data and isinstance(part_data["table"], pd.DataFrame):
+            if "stats_table" in part_data and isinstance(part_data["stats_table"], pd.DataFrame):
                 # Convert the DataFrame to a dictionary (records orientation is most JSON-like)
-                part_data["table"] = part_data["table"].to_dict(orient="records")
+                part_data["stats_table"] = part_data["stats_table"].to_dict(orient="records")
 
     # Save the updated dictionary to JSON
     output_file = f"{chapter_fix_dir}/fix_chapters_stats.json"  # Replace with your desired path
