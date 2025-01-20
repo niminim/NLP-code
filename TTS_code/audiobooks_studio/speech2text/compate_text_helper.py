@@ -279,3 +279,20 @@ def update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_co
         'CER': f"{fix_compare_texts_res['CER']:.2%}",
         'len_diff': fix_compare_texts_res['len_diff']
     }
+
+
+def save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir):
+    # Convert DataFrames in fix_chapters_stats to dictionaries
+    for chapter, parts in fix_chapters_stats.items():
+        for part, part_data in parts.items():
+            if "table" in part_data and isinstance(part_data["table"], pd.DataFrame):
+                # Convert the DataFrame to a dictionary (records orientation is most JSON-like)
+                part_data["table"] = part_data["table"].to_dict(orient="records")
+
+    # Save the updated dictionary to JSON
+    output_file = f"{chapter_fix_dir}/fix_chapters_stats.json"  # Replace with your desired path
+
+    with open(output_file, "w", encoding="utf-8") as json_file:
+        json.dump(fix_chapters_stats, json_file, indent=4)
+
+    print(f"fix_chapters_stats saved to: {output_file}")

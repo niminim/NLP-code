@@ -69,7 +69,7 @@ from TTS_code.audiobooks_studio.speech2text.STT_helper import *
 tts_model = get_model(model_name ='xtts_v2')
 model, processor = get_STT_model(model_name='whisper')
 
-reps = 2 # number of repetitions
+reps = 3 # number of repetitions
 
 # Iterate through each chapter and its corresponding parts
 for chapter, parts in to_correct.items():
@@ -93,6 +93,7 @@ for chapter, parts in to_correct.items():
 
 
 ########### Choose best repetitions
+import pandas as pd
 fix_chapters_stats = {} # here we store the suspected parts, and add to that the replaced parts
 
 for chapter in chapters:
@@ -119,6 +120,9 @@ for chapter in chapters:
         fix_chapter_dir = os.path.join(base, f"corrections_{book_name}", chapter)
         fix_transcribed_paths = find_files_with_prefix_and_format(folder_path=fix_chapter_dir, prefix=f"part{part}", file_format=".txt")
 
+        # Collect data for the table
+        table_data = []
+
         for rep_idx, fix_transcribed_path in enumerate(fix_transcribed_paths):
             fix_chapters_stats[chapter][part][rep_idx+1] = {}
 
@@ -126,7 +130,15 @@ for chapter in chapters:
             fix_compare_texts_res = compare_texts(original_chunk_norm, fixed_transcribed)
             update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_compare_texts_res, orig_part_stats)
 
-            print('part: ', part)
+            # Add row to the table
+            table_data.append({
+                "rep_idx": rep_idx + 1,
+                "WER": fix_compare_texts_res["WER"],
+                "CER": fix_compare_texts_res["CER"],
+                "len_diff": fix_compare_texts_res["len_diff"]
+            })
+
+            print(f"part: {part}, rep: {rep_idx+1}" )
             print(f"WER: {fix_compare_texts_res['WER']:.2%}")
             print(f"CER: {fix_compare_texts_res['CER']:.2%}")
             print(f"Diff (words): {fix_compare_texts_res['len_diff']}")
@@ -136,7 +148,12 @@ for chapter in chapters:
             if abs(fix_compare_texts_res['len_diff']) < abs(orig_part_stats['len_diff']):
                 print(f"Improvement")
             print('***')
+
+        save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir)
         print('******')
+
+
+
 
 
 
