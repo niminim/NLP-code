@@ -6,6 +6,7 @@ import json
 
 
 def get_dirs(base, book_name, ref):
+    # get important dirs
     book_dir = f"{book_name}_by_{ref}_350" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
     book_path = os.path.join(base, book_dir)
     json_dir = os.path.join(book_path, "texts", "comparisons")
@@ -282,6 +283,14 @@ def update_fix_chapters_stats(fix_chapters_stats, chapter, part, rep_idx, fix_co
     }
 
 
+def print_fix_stats(part, rep_idx, fix_compare_texts_res):
+    print(f"part: {part}, rep: {rep_idx + 1}")
+    print(f"WER: {fix_compare_texts_res['WER']:.2%}")
+    print(f"CER: {fix_compare_texts_res['CER']:.2%}")
+    print(f"Diff (words): {fix_compare_texts_res['len_diff']}")
+
+
+
 def update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res):
     stats_table.append({
         "rep_idx": rep_idx + 1,
@@ -291,24 +300,51 @@ def update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res):
     })
 
 
+def print_fix_stats(part, rep_idx, fix_compare_texts_res):
+    print(f"part: {part}, rep: {rep_idx + 1}")
+    print(f"WER: {fix_compare_texts_res['WER']:.2%}")
+    print(f"CER: {fix_compare_texts_res['CER']:.2%}")
+    print(f"Diff (words): {fix_compare_texts_res['len_diff']}")
+
+
 def sort_stats_table(fix_chapters_stats, stats_table, chapter, part):
-    # Create a DataFrame for sorting
+    """
+    Sorts the stats_table for a given chapter and part based on specific criteria
+    and stores the sorted table in fix_chapters_stats.
+
+    Args:
+        fix_chapters_stats (dict): The main dictionary storing statistics for all chapters and parts.
+        stats_table (list): A list of dictionaries containing stats for different repetitions (rep_idx).
+        chapter (str): The current chapter being processed.
+        part (int): The current part of the chapter being processed.
+
+    Returns:
+        None: The function updates fix_chapters_stats in place.
+    """
+
+    # Step 1: Create a DataFrame from the stats_table for easy sorting and manipulation
     df = pd.DataFrame(stats_table)
 
-    # Add a column for the absolute value of len_diff
+    # Step 2: Add a helper column for the absolute value of len_diff
+    # This ensures sorting prioritizes smaller absolute differences in length, regardless of the sign
     df["abs_len_diff"] = df["len_diff"].abs()
 
-    # Sort by abs_len_diff (ascending), then CER, WER, and rep_idx
+    # Step 3: Sort the DataFrame
+    # Sorting is done in the following order:
+    # - abs_len_diff: Ascending (smaller absolute differences come first)
+    # - CER: Ascending (lower character error rate is better)
+    # - WER: Ascending (lower word error rate is better)
+    # - rep_idx: Ascending (smaller repetition indices come first as a tiebreaker)
     sorted_df = df.sort_values(by=["abs_len_diff", "CER", "WER", "rep_idx"], ascending=True)
 
-    # Drop the helper column
+    # Step 4: Drop the helper column (abs_len_diff) as it is no longer needed
     sorted_df = sorted_df.drop(columns=["abs_len_diff"])
 
-    # Print the sorted table
+    # Step 5: Print the sorted DataFrame for debugging or confirmation
     print(f"Sorted Table for Chapter {chapter}, Part {part}:")
     print(sorted_df)
 
-    # Store the sorted DataFrame for this part in fix_chapters_stats
+    # Step 6: Store the sorted DataFrame in fix_chapters_stats under the current chapter and part
     fix_chapters_stats[chapter][part]["stats_table"] = sorted_df
 
 

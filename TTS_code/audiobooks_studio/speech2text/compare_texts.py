@@ -104,8 +104,8 @@ for chapter in chapters:
     fix_chapters_stats[chapter] = {} # for a specif chapter (here we store all the relevant data to suspected parts)
 
 
-    chapter_fix_dir = os.path.join(base,f"corrections_{book_name}", chapter)
-    fix_part_nums = get_sorted_part_numbers(chapter_fix_dir)
+    fix_chapter_dir = os.path.join(base,f"corrections_{book_name}", chapter)
+    fix_part_nums = get_sorted_part_numbers(fix_chapter_dir)
 
 
     for part in fix_part_nums:
@@ -115,7 +115,6 @@ for chapter in chapters:
         original_chunk_norm = orig_part_stats['original_text']
         orig_transcribed_nom = orig_part_stats['transcribed_text']
 
-        fix_chapter_dir = os.path.join(base, f"corrections_{book_name}", chapter)
         fix_transcribed_paths = find_files_with_prefix_and_format(folder_path=fix_chapter_dir, prefix=f"part{part}", file_format=".txt")
 
         # Collect data for the table
@@ -130,11 +129,7 @@ for chapter in chapters:
 
             # Add row to the table
             update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res)
-
-            print(f"part: {part}, rep: {rep_idx+1}" )
-            print(f"WER: {fix_compare_texts_res['WER']:.2%}")
-            print(f"CER: {fix_compare_texts_res['CER']:.2%}")
-            print(f"Diff (words): {fix_compare_texts_res['len_diff']}")
+            print_fix_stats(part, rep_idx, fix_compare_texts_res)
 
 
             # Use raw `wer` and `cer` variables for comparison
@@ -144,7 +139,7 @@ for chapter in chapters:
         sort_stats_table(fix_chapters_stats, stats_table, chapter, part)
 
         print('******')
-    save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir)
+    save_fix_chapters_stats_json(fix_chapters_stats, fix_chapter_dir)
 
 
 
