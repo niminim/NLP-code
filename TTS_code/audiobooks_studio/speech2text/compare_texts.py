@@ -13,11 +13,11 @@ if __name__ == "__main__":
     ref = 'scott_brick'
 
     base = "/home/nim"
-    book_name = 'To_Sleep_With_Evil'  # Lord_of_the_Necropolis
+    book_name = 'Shadowborn'  # Lord_of_the_Necropolis, To_Sleep_With_Evil. Forged_In_Cold
 
     book_path, json_dir, orig_chunks_dir, transcribed_dir = get_dirs(base, book_name, ref)
     chapters = chapter_names[book_name]  # chapters we want to subscribe
-    chapters = ['Book']
+    # chapters = ['Book']
 
     to_correct = {} # includes the parts to correct (of each chapter)
 
@@ -92,21 +92,26 @@ for chapter, parts in to_correct.items():
 
 
 ########### Choose best repetitions
-fix_chapters_stats = {} # here we store the suspected parts, and add to that the replaced parts
+fix_chapters_stats = {}  # Here we store the suspected parts, and add to that the replaced parts
 
 for chapter in chapters:
-    print(chapter)
+    print(f"Processing chapter: {chapter}")
 
+    # Define the directory for corrections
+    fix_chapter_dir = os.path.join(base, f"corrections_{book_name}", chapter)
+
+    # Check if the directory exists
+    if not os.path.exists(fix_chapter_dir) or not os.path.isdir(fix_chapter_dir):
+        print(f"Directory {fix_chapter_dir} does not exist, means no problems found. Skipping chapter {chapter}.")
+        continue  # Skip to the next chapter
+
+    # Initialize stats for the chapter
     fix_chapters_stats[chapter] = {}
+
     orig_json_path = os.path.join(json_dir, f"{chapter}.json")
     orig_chapter_stats = read_json_file(orig_json_path)[f"chapter {chapter}"]
-    fix_chapter_stats = {} # here we store the suspected parts (from all chapters), and add to that the replaced parts
-    fix_chapters_stats[chapter] = {} # for a specif chapter (here we store all the relevant data to suspected parts)
 
-
-    fix_chapter_dir = os.path.join(base,f"corrections_{book_name}", chapter)
     fix_part_nums = get_sorted_part_numbers(fix_chapter_dir)
-
 
     for part in fix_part_nums:
         fix_chapters_stats[chapter][part] = {}
@@ -115,13 +120,15 @@ for chapter in chapters:
         original_chunk_norm = orig_part_stats['original_text']
         orig_transcribed_nom = orig_part_stats['transcribed_text']
 
-        fix_transcribed_paths = find_files_with_prefix_and_format(folder_path=fix_chapter_dir, prefix=f"part{part}", file_format=".txt")
+        fix_transcribed_paths = find_files_with_prefix_and_format(
+            folder_path=fix_chapter_dir, prefix=f"part{part}_", file_format=".txt"
+        )
 
         # Collect data for the table
         stats_table = []
 
         for rep_idx, fix_transcribed_path in enumerate(fix_transcribed_paths):
-            fix_chapters_stats[chapter][part][rep_idx+1] = {}
+            fix_chapters_stats[chapter][part][rep_idx + 1] = {}
 
             fixed_transcribed = open_text_file(fix_transcribed_path)
             fix_compare_texts_res = compare_texts(original_chunk_norm, fixed_transcribed)
@@ -131,16 +138,14 @@ for chapter in chapters:
             update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res)
             print_fix_stats(part, rep_idx, fix_compare_texts_res)
 
-
-            # Use raw `wer` and `cer` variables for comparison
             if abs(fix_compare_texts_res['len_diff']) < abs(orig_part_stats['len_diff']):
                 print(f"Improvement")
             print('***')
+
         sort_stats_table(fix_chapters_stats, stats_table, chapter, part)
-
         print('******')
-    save_fix_chapters_stats_json(fix_chapters_stats, fix_chapter_dir)
 
+save_fix_chapters_stats_json(fix_chapters_stats, os.path.join(base, f"corrections_{book_name}"))
 
 
 

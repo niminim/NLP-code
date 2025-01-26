@@ -7,7 +7,7 @@ import json
 
 def get_dirs(base, book_name, ref):
     # get important dirs
-    book_dir = f"{book_name}_by_{ref}_350" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
+    book_dir = f"{book_name}_by_{ref}_250" # The_Dragons_of_Krynn_NEW5_by_ralph_lister_350
     book_path = os.path.join(base, book_dir)
     json_dir = os.path.join(book_path, "texts", "comparisons")
     os.makedirs(json_dir, exist_ok=True)

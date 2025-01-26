@@ -33,20 +33,22 @@ def split_text_by_sentences_nltk(text):
 file_path = '/home/nim/Downloads/Forged_In_Cold-Diane.epub'
 file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
 file_path = '/home/nim/Downloads/To_Sleep_With_Evil.epub'
+file_path = '/home/nim/Downloads/Shadowborn.epub'
+
 epub_content = read_epub(file_path)
 
 ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler, emilia_clarke, perdita_weeks, scott_brick,
-chunk_size = 350
+chunk_size = 250
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'To_Sleep_With_Evil'
+book_name = 'Forged_In_Cold'
 book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-# chapter_text = epub_content[14:859] # for Forged in cold  epub_content[:-283]
+chapter_text = epub_content[:-283] # for Forged in cold  epub_content[:-283]
 
 chapter_name = 'Book'.replace(' ', '_')
 chapter_audio_dir =  os.path.join(book_path, 'audio', chapter_name)
@@ -80,7 +82,13 @@ output_file = os.path.join(audio_dir, chapter_str + chapter_name + f".{audio_for
 concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
 
 
-#### To deal with to sleep with evil
+
+
+
+
+
+
+########### To deal with to sleep with evil
 
 # Assuming epub_content contains the text
 text = epub_content[3900:-283]

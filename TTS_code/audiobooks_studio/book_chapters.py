@@ -32,4 +32,10 @@ chapter_names['To_Sleep_With_Evil'] = ['Prologue', 'One', 'Two', 'Three', 'Four'
             'Epilogue', 'Back Cover'] # Parts appears at the end! only used as a stop point
 
 
+chapter_names['Shadowborn'] = ['Prelude', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven',
+             'Twelve', 'Thirteen', 'Fourteen', 'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen','Twenty',
+             'Twenty-one', 'Twenty-two', 'Twenty-three' ] # Parts appears at the end! only used as a stop point
+
+
+
 

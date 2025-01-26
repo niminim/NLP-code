@@ -22,15 +22,17 @@ from book_chapters import *
 file_path = '/home/nim/Downloads/Baroness_of_Blood.epub'
 file_path = '/home/nim/Downloads/King_of_the_Dead.epub'
 file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
+file_path = '/home/nim/Downloads/Shadowborn.epub'
+
 epub_content = read_epub(file_path)
 
 ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, emilia_clarke, perdita_weeks, scott_brick, john_lee2
-chunk_size = 351
+chunk_size = 250
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'Lord_of_the_Necropolis' # to be used for the folder name  (King_of_the_Dead, King_of_The_Dead)
+book_name = 'Shadowborn' # to be used for the folder name  (King_of_the_Dead, King_of_The_Dead)
 book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 # List of chapters
@@ -44,7 +46,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-for chapter_idx in [0]:
+for chapter_idx in [18,19,20,21,22,23]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)

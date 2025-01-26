@@ -74,6 +74,11 @@ folder = '/home/nim/To_Sleep_With_Evil'
 text_name = 'You are listening to the book To Sleep With Evil. A Ravenloft novel, Written by Andrial Cardarelle. Narrated by AI voice-cloning of Scott Brick'
 tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
-epub_content[14:859]
+
+folder = '/home/nim/Shadowborn'
+text_name = 'You are listening to the book - Shadowborn. A Ravenloft novel, Written by William W. Connors and Carrie A. Bebris. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+
+
 #############
 
