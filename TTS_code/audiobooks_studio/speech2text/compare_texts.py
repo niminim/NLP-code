@@ -91,7 +91,7 @@ for chapter, parts in to_correct.items():
 
 
 
-########### Choose best repetitions
+########### Sort all repetitions and store them in a json file
 fix_chapters_stats = {}  # Here we store the suspected parts, and add to that the replaced parts
 
 for chapter in chapters:
@@ -146,6 +146,68 @@ for chapter in chapters:
         print('******')
 
 save_fix_chapters_stats_json(fix_chapters_stats, os.path.join(base, f"corrections_{book_name}"))
+
+
+
+
+######################### Replace best fixed files with original files
+import shutil
+
+fix_chapter_dir = os.path.join(base, f"corrections_{book_name}")
+counter = {'Improved': 0,
+           'Legit': 0,
+           'Check': 0}
+
+for chapter, chatper_data in fix_chapters_stats.items():
+    print(f"Chapter: {chapter}")
+    orig_chapter_json = read_json_file(os.path.join(book_path, f"{'texts/comparisons'}/{chapter}.json"))
+
+    for part, part_data in chatper_data.items():
+        print(f"Part: {part}")
+        orig_audio_file = os.path.join(book_path, f"audio/{chapter}/part{part}.wav")
+        orig_sub_file = os.path.join(book_path,  f"texts/transcriptions/{chapter}/part{part}.wav")
+
+
+        orig_part_wer = orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['WER']
+        orig_part_cer = orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['CER']
+
+        orig_part_data = {'wer': round(float(orig_part_wer.strip('%')) / 100, 3),
+                          'cer': round(float(orig_part_cer.strip('%')) / 100, 3),
+                          'len_diff': orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['len_diff'],
+                          }
+
+
+        print(f"orig part: wer {orig_part_data['wer']}, cer {orig_part_data['cer']}, len_diff {orig_part_data['len_diff']}")
+
+        print(f"{part_data['stats_table']}")
+
+        best_fix_rep = {'rep': part_data['stats_table']['rep_idx'][0],
+                        'wer': part_data['stats_table']['WER'][0],
+                        'cer': part_data['stats_table']['CER'][0],
+                        'len_diff': part_data['stats_table']['len_diff'][0]}
+
+        fix_part_audio_path = os.path.join(fix_chapter_dir,chapter, f"part_{best_fix_rep['rep']}.wav" )
+        fix_part_sub_path = os.path.join(fix_chapter_dir,chapter, f"part_{best_fix_rep['rep']}.txt" )
+
+
+        if (best_fix_rep['len_diff'] < abs(orig_part_data['len_diff'])) or (best_fix_rep['cer'] < orig_part_data['cer']):
+            print('Improved')
+            counter['Improved'] += 1
+            print(f"{fix_part_audio_path} --> {orig_audio_file}")
+            print(f"{fix_part_sub_path} --> {orig_sub_file}")
+
+            # shutil.copy(source, target)
+
+        elif (-2 <= best_fix_rep['len_diff'] <= 2) or best_fix_rep['cer'] < 0.05:
+            print('Not Improved, but legit')
+            counter['Legit'] += 1
+        else:
+            print('Check TTS')
+            counter['Check'] += 1
+        print('***')
+
+
+
 
 
 

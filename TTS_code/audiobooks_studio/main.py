@@ -1,5 +1,7 @@
 import os
 import time
+
+import numpy as np
 from tqdm import tqdm
 
 import sys
@@ -46,7 +48,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-for chapter_idx in [18,19,20,21,22,23]:
+for chapter_idx in [23]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)

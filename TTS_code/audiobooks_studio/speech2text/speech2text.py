@@ -35,7 +35,7 @@ book_path = os.path.join(base, book_dir)
 chapter = "One"  # Prologue, One
 # chapter = "Scourge_of_the_Wicked_Kendragon"
 chapter = "Book"
-chapter = "Uri"
+chapter = "Twenty-three"
 
 model_name= 'whisper'
 model, processor = get_STT_model(model_name)
