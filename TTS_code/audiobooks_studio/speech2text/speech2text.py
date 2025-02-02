@@ -17,9 +17,8 @@ chapters = chapter_names[book_name] # chapters we want to subscribe
 model, processor = get_STT_model(model_name='whisper')
 
 for chapter_idx, chapter in enumerate(tqdm(chapters)):
-
-    audio_dir = os.path.join(book_path, "audio", chapter)
-    transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter)
+    audio_dir = os.path.join(book_path, "audio", chapter.replace(" ", "_"))
+    transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter.replace(" ", "_"))
     transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
 
 
