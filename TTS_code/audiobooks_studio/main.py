@@ -25,16 +25,18 @@ file_path = '/home/nim/Downloads/Baroness_of_Blood.epub'
 file_path = '/home/nim/Downloads/King_of_the_Dead.epub'
 file_path = '/home/nim/Downloads/Lord_of_the_Necropolis.epub'
 file_path = '/home/nim/Downloads/Shadowborn.epub'
+file_path = '/home/nim/Downloads/Black_Crusade.epub'
+file_path = '/home/nim/Downloads/Mithras_Court.epub'
 
 epub_content = read_epub(file_path)
 
 ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, emilia_clarke, perdita_weeks, scott_brick, john_lee2
 chunk_size = 250
 audio_format = 'wav'
-start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
+start_zero = False # True if we have a prologue (or something else), False if we start from chapter 1
 
 base = '/home/nim'
-book_name = 'Shadowborn' # to be used for the folder name  (King_of_the_Dead, King_of_The_Dead)
+book_name = 'Mithras_Court' # to be used for the folder name  (King_of_the_Dead, King_of_The_Dead)
 book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 # List of chapters
@@ -48,7 +50,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-for chapter_idx in [23]:
+for chapter_idx in [31,32]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)
@@ -64,7 +66,7 @@ for chapter_idx in [23]:
     chapter_chunks = split_text_into_chunks(chapter_text, max_chunk=chunk_size)
 
 
-    if chapter_name.lower() not in ['prelude', 'prologue', 'interlude', 'epilogue']:
+    if chapter_name.lower() not in ['prelude', 'prologue', 'interlude', 'epilogue'] or 'chapter' not in chapter_name.lower():
         chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
 
     # Generate audio and save the original text of each chunk
@@ -74,9 +76,9 @@ for chapter_idx in [23]:
         filepath = os.path.join(chapter_audio_dir, f"part{idx + 1}.wav")
         print(chunk)
         tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
-    #
-    #     # if idx == 8:
-    #     #     break
+
+        # if idx==0:
+        #     break
 
     # Concat parts to assemble the chapter
     chapter_str = chapter_idx_str(chapter_idx, start_zero)
@@ -84,6 +86,19 @@ for chapter_idx in [23]:
     concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
 
     # Sleep for 15 seconds
-    time.sleep(15)
+    time.sleep(20)
 
 ####
+
+
+for chapter_idx in np.arange(0,32):
+    chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
+    chapter_name = chapters[chapter_idx].replace(' ', '_')
+    chapter_audio_dir =  os.path.join(audio_dir, chapter_name)
+    os.makedirs(chapter_audio_dir, exist_ok=True)
+
+    # Concat parts to assemble the chapter
+    chapter_str = chapter_idx_str(chapter_idx, start_zero)
+    output_file = os.path.join(audio_dir, chapter_str + chapter_name + f".{audio_format}")
+    concat_wavs_in_folder(chapter_audio_dir, output_file, format=audio_format)
+

@@ -8,7 +8,7 @@ from TTS_code.audiobooks_studio.book_chapters import *
 from TTS_code.audiobooks_studio.speech2text.STT_helper import *
 
 base = '/home/nim/'
-book_name = 'Shadowborn'
+book_name = 'Black_Crusade'
 book_dir = f"{book_name}_by_scott_brick_250"
 book_path = os.path.join(base, book_dir)
 
@@ -27,7 +27,7 @@ for chapter_idx, chapter in enumerate(tqdm(chapters)):
 ############################## One chapter
 
 base = '/home/nim/'
-book_name = 'Shadowborn'
+book_name = 'Black_Crusade'
 book_dir = f"{book_name}_by_scott_brick_250" # Baroness_of_Blood2_by_ralph_lister_350, King_of_the_Dead_by_scott_brick_350
 # The_Dragons_of_Krynn_NEW5, Forged_in_Cold, To_Sleep_With_Evil, Shadowborn
 book_path = os.path.join(base, book_dir)
@@ -35,7 +35,6 @@ book_path = os.path.join(base, book_dir)
 chapter = "One"  # Prologue, One
 # chapter = "Scourge_of_the_Wicked_Kendragon"
 chapter = "Book"
-chapter = "Twenty-three"
 
 model_name= 'whisper'
 model, processor = get_STT_model(model_name)

@@ -39,5 +39,16 @@ chapter_names['Shadowborn'] = ['Prelude', 'One', 'Two', 'Three', 'Four','Five', 
                'Back Cover'] # Parts appears at the end! only used as a stop point
 
 
+chapter_names['Black_Crusade'] = ['Prologue', 'One', 'Two', 'Three', 'Four','Five', 'Six', 'Seven','Eight', 'Nine','Ten', 'Eleven',
+             'Twelve', 'Thirteen', 'Fourteen', 'Fifteen','Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'] # Parts appears at the end! only used as a stop point
 
+
+chapter_names['Mithras_Court'] = ['Chapter One', 'Chapter Two', 'Chapter Three', 'Chapter Four','Chapter Five', 'Chapter Six',
+                                  'Chapter Seven','Chapter Eight', 'Chapter Nine','Chapter Ten', 'Chapter Eleven',
+                                  'Chapter Twelve', 'Chapter Thirteen', 'Chapter Fourteen', 'Chapter Fifteen',
+                                  'Chapter Sixteen', 'Chapter Seventeen', 'Chapter Eighteen',
+                                  'Chapter Nineteen','Chapter Twenty', 'Chapter Twenty-One', 'Chapter Twenty-Two', 'Chapter Twenty-Three',
+                                  'Chapter Twenty-Four', 'Chapter Twenty-Five', 'Chapter Twenty-Six', 'Chapter Twenty-Seven',
+                                  'Chapter Twenty-Eight', 'Chapter Twenty-Nine', 'Chapter Thirty',
+                                  'Back Cover'] # Parts appears at the end! only used as a stop point
 

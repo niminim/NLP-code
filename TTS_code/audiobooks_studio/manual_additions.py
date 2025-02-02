@@ -80,5 +80,17 @@ text_name = 'You are listening to the book - Shadowborn. A Ravenloft novel, Writ
 tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
+folder = '/home/nim/Black_Crusade_by_scott_brick_250'
+text_name = 'You are listening to - Dominiom - Black Crusade. A Ravenloft novel written by Ari Marmell. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+
+folder = '/home/nim/Mithras_Court_by_scott_brick_250'
+text_name = 'You are listening to - Dominiom - Mithras Court. A Ravenloft novel written by David A. Page. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+
+
+folder = '/home/nim/Mithras_Court_by_scott_brick_250'
+text_name = 'December, 1892London\n\n\n\n\n\n\n\nMithrasCourt\n\n\n'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 #############
 

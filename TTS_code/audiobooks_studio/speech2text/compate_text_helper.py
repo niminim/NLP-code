@@ -341,8 +341,8 @@ def sort_stats_table(fix_chapters_stats, stats_table, chapter, part):
     sorted_df = sorted_df.drop(columns=["abs_len_diff"])
 
     # Step 5: Print the sorted DataFrame for debugging or confirmation
-    print(f"Sorted Table for Chapter {chapter}, Part {part}:")
-    print(sorted_df)
+    # print(f"Sorted Table for Chapter {chapter}, Part {part}:")
+    # print(sorted_df)
 
     # Step 6: Store the sorted DataFrame in fix_chapters_stats under the current chapter and part
     fix_chapters_stats[chapter][part]["stats_table"] = sorted_df
@@ -363,3 +363,15 @@ def save_fix_chapters_stats_json(fix_chapters_stats, chapter_fix_dir):
         json.dump(fix_chapters_stats, json_file, indent=4)
 
     print(f"fix_chapters_stats saved to: {output_file}")
+
+
+
+def get_part_stats_from_orig_json(orig_chapter_json, chapter, part):
+    orig_part_wer = orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['WER']
+    orig_part_cer = orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['CER']
+
+    orig_part_data = {'wer': round(float(orig_part_wer.strip('%')) / 100, 3),
+                      'cer': round(float(orig_part_cer.strip('%')) / 100, 3),
+                      'len_diff': orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['len_diff'],
+                      }
+    return orig_part_data

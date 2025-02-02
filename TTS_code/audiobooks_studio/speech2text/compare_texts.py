@@ -13,7 +13,7 @@ if __name__ == "__main__":
     ref = 'scott_brick'
 
     base = "/home/nim"
-    book_name = 'Shadowborn'  # Lord_of_the_Necropolis, To_Sleep_With_Evil. Forged_In_Cold
+    book_name = 'Black_Crusade'  # Lord_of_the_Necropolis, To_Sleep_With_Evil. Forged_In_Cold
 
     book_path, json_dir, orig_chunks_dir, transcribed_dir = get_dirs(base, book_name, ref)
     chapters = chapter_names[book_name]  # chapters we want to subscribe
@@ -136,17 +136,12 @@ for chapter in chapters:
 
             # Add row to the table
             update_fixed_stats_table(stats_table, rep_idx, fix_compare_texts_res)
-            print_fix_stats(part, rep_idx, fix_compare_texts_res)
-
-            if abs(fix_compare_texts_res['len_diff']) < abs(orig_part_stats['len_diff']):
-                print(f"Improvement")
-            print('***')
+            # print_fix_stats(part, rep_idx, fix_compare_texts_res)
 
         sort_stats_table(fix_chapters_stats, stats_table, chapter, part)
-        print('******')
 
 save_fix_chapters_stats_json(fix_chapters_stats, os.path.join(base, f"corrections_{book_name}"))
-
+###
 
 
 
@@ -167,27 +162,20 @@ for chapter, chatper_data in fix_chapters_stats.items():
         orig_audio_file = os.path.join(book_path, f"audio/{chapter}/part{part}.wav")
         orig_sub_file = os.path.join(book_path,  f"texts/transcriptions/{chapter}/part{part}.wav")
 
-
-        orig_part_wer = orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['WER']
-        orig_part_cer = orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['CER']
-
-        orig_part_data = {'wer': round(float(orig_part_wer.strip('%')) / 100, 3),
-                          'cer': round(float(orig_part_cer.strip('%')) / 100, 3),
-                          'len_diff': orig_chapter_json[f"chapter {chapter}"][f"Part {part}"]['len_diff'],
-                          }
+        orig_part_data = get_part_stats_from_orig_json(orig_chapter_json, chapter, part)
 
 
         print(f"orig part: wer {orig_part_data['wer']}, cer {orig_part_data['cer']}, len_diff {orig_part_data['len_diff']}")
 
         print(f"{part_data['stats_table']}")
 
-        best_fix_rep = {'rep': part_data['stats_table']['rep_idx'][0],
-                        'wer': part_data['stats_table']['WER'][0],
-                        'cer': part_data['stats_table']['CER'][0],
-                        'len_diff': part_data['stats_table']['len_diff'][0]}
+        best_fix_rep = {'rep': part_data['stats_table'][0]['rep_idx'],
+                        'wer': part_data['stats_table'][0]['WER'],
+                        'cer': part_data['stats_table'][0]['CER'],
+                        'len_diff': part_data['stats_table'][0]['len_diff']}
 
-        fix_part_audio_path = os.path.join(fix_chapter_dir,chapter, f"part_{best_fix_rep['rep']}.wav" )
-        fix_part_sub_path = os.path.join(fix_chapter_dir,chapter, f"part_{best_fix_rep['rep']}.txt" )
+        fix_part_audio_path = os.path.join(fix_chapter_dir,chapter, f"part{part}_{best_fix_rep['rep']}.wav" )
+        fix_part_sub_path = os.path.join(fix_chapter_dir,chapter, f"part{part}_{best_fix_rep['rep']}.txt" )
 
 
         if (best_fix_rep['len_diff'] < abs(orig_part_data['len_diff'])) or (best_fix_rep['cer'] < orig_part_data['cer']):
@@ -195,8 +183,8 @@ for chapter, chatper_data in fix_chapters_stats.items():
             counter['Improved'] += 1
             print(f"{fix_part_audio_path} --> {orig_audio_file}")
             print(f"{fix_part_sub_path} --> {orig_sub_file}")
-
-            # shutil.copy(source, target)
+            shutil.copy(fix_part_audio_path, orig_audio_file)
+            shutil.copy(fix_part_sub_path, orig_sub_file)
 
         elif (-2 <= best_fix_rep['len_diff'] <= 2) or best_fix_rep['cer'] < 0.05:
             print('Not Improved, but legit')
@@ -205,6 +193,8 @@ for chapter, chatper_data in fix_chapters_stats.items():
             print('Check TTS')
             counter['Check'] += 1
         print('***')
+
+print(counter)
 
 
 
