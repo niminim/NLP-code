@@ -8,7 +8,7 @@ from TTS_code.audiobooks_studio.book_chapters import *
 from TTS_code.audiobooks_studio.speech2text.STT_helper import *
 
 base = '/home/nim/'
-book_name = 'Black_Crusade'
+book_name = 'Mithras_Court'
 book_dir = f"{book_name}_by_scott_brick_250"
 book_path = os.path.join(base, book_dir)
 

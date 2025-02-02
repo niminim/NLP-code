@@ -1,7 +1,7 @@
 # https://docs.coqui.ai/en/latest/inference.html
 
 import torch
-from TTS_code.api import TTS
+from TTS.api import TTS
 import soundfile as sf
 import numpy as np
 

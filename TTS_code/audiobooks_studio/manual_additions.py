@@ -81,16 +81,21 @@ tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav
 
 
 folder = '/home/nim/Black_Crusade_by_scott_brick_250'
-text_name = 'You are listening to - Dominiom - Black Crusade. A Ravenloft novel written by Ari Marmell. Narrated by AI voice-cloning of Scott Brick'
+text_name = 'You are listening to - Dominion - Black Crusade. A Ravenloft novel written by Ari Marmell. Narrated by AI voice-cloning of Scott Brick'
 tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 folder = '/home/nim/Mithras_Court_by_scott_brick_250'
-text_name = 'You are listening to - Dominiom - Mithras Court. A Ravenloft novel written by David A. Page. Narrated by AI voice-cloning of Scott Brick'
+text_name = 'You are listening to - Dominion - Mithras Court. A Ravenloft novel written by David A. Page. Narrated by AI voice-cloning of Scott Brick'
 tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
 folder = '/home/nim/Mithras_Court_by_scott_brick_250'
-text_name = 'December, 1892London\n\n\n\n\n\n\n\nMithrasCourt\n\n\n'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+text_name = 'December, 1892 London\n\n'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-December_london.wav")
+
+
+folder = '/home/nim/Mithras_Court_by_scott_brick_250'
+text_name = '\n\n\nMithras Court\n\n\n'
+tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/02_0-Mithras_Court.wav")
 #############
 

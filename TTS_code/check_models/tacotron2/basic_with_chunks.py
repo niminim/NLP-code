@@ -1,4 +1,4 @@
-from TTS_code.api import TTS
+from TTS.api import TTS
 import soundfile as sf
 import numpy as np
 import torch

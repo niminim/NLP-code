@@ -50,7 +50,7 @@ chapters_dict = create_chapters_dict(sorted_chapters, epub_content)
 
 tts_model = get_model(model_name ='xtts_v2')
 
-for chapter_idx in [31,32]:
+for chapter_idx in [0]:
     chapter_text, chapter_info = get_chapter_text(epub_content, chapters_dict, chapters, chapter_idx)
     chapter_name = chapters[chapter_idx].replace(' ', '_')
     chapter_audio_dir =  os.path.join(audio_dir, chapter_name)
@@ -60,14 +60,13 @@ for chapter_idx in [31,32]:
     processed_substring = remove_first_newline_block(chapter_text[:50])
     chapter_text = processed_substring + chapter_text[50:]
     chapter_text = add_space_after_nth_newline_block(chapter_text, 1)
-    processed_substring = process_chunk_add_new_section(chapter_text[100:], size=4)
+    processed_substring = process_chunk_add_new_section(chapter_text[100:], size=6)
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently supports one and two)
     chapter_chunks = split_text_into_chunks(chapter_text, max_chunk=chunk_size)
 
-
-    if chapter_name.lower() not in ['prelude', 'prologue', 'interlude', 'epilogue'] or 'chapter' not in chapter_name.lower():
-        chapter_chunks[0] = 'Chapter ' + chapter_chunks[0] # The word Chapter should be added
+    if not any(keyword in chapter_name.lower() for keyword in excluded_keywords):
+        chapter_chunks[0] = f'Chapter {chapter_chunks[0]}'  # Prepend "Chapter"
 
     # Generate audio and save the original text of each chunk
     for idx, chunk in enumerate(tqdm(chapter_chunks, desc=f"chapter idx {chapter_idx} - Processing chunks")):

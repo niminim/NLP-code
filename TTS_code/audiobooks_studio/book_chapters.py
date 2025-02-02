@@ -52,3 +52,4 @@ chapter_names['Mithras_Court'] = ['Chapter One', 'Chapter Two', 'Chapter Three',
                                   'Chapter Twenty-Eight', 'Chapter Twenty-Nine', 'Chapter Thirty',
                                   'Back Cover'] # Parts appears at the end! only used as a stop point
 
+excluded_keywords = ['prelude', 'prologue', 'interlude', 'epilogue', 'chapter']
