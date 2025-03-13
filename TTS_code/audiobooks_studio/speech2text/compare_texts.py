@@ -13,7 +13,7 @@ if __name__ == "__main__":
     ref = 'scott_brick'
 
     base = "/home/nim"
-    book_name = 'Black_Crusade'  # Lord_of_the_Necropolis, To_Sleep_With_Evil. Forged_In_Cold
+    book_name = 'The_Dragons_of_Krynn'  # Lord_of_the_Necropolis, To_Sleep_With_Evil. Forged_In_Cold
 
     book_path, json_dir, orig_chunks_dir, transcribed_dir = get_dirs(base, book_name, ref)
     chapters = chapter_names[book_name]  # chapters we want to subscribe
@@ -22,6 +22,7 @@ if __name__ == "__main__":
     to_correct = {} # includes the parts to correct (of each chapter)
 
     for chapter in chapters:
+        chapter = chapter.replace(" ", "_")
         if chapter in os.listdir(os.path.join(transcribed_dir)):
             print(f"chapter: {chapter}")
         else:
@@ -72,6 +73,7 @@ reps = 3 # number of repetitions
 
 # Iterate through each chapter and its corresponding parts
 for chapter, parts in to_correct.items():
+    chapter = chapter.replace(" ", "_")
     print(f"Chapter: {chapter}")
     for part in parts:
         chunk_text_path = os.path.join(orig_chunks_dir, chapter,f"part{part}.txt")
@@ -95,6 +97,7 @@ for chapter, parts in to_correct.items():
 fix_chapters_stats = {}  # Here we store the suspected parts, and add to that the replaced parts
 
 for chapter in chapters:
+    chapter = chapter.replace(" ", "_")
     print(f"Processing chapter: {chapter}")
 
     # Define the directory for corrections
@@ -154,6 +157,7 @@ counter = {'Improved': 0,
            'Check': 0}
 
 for chapter, chatper_data in fix_chapters_stats.items():
+    chapter = chapter.replace(" ", "_")
     print(f"Chapter: {chapter}")
     orig_chapter_json = read_json_file(os.path.join(book_path, f"{'texts/comparisons'}/{chapter}.json"))
 

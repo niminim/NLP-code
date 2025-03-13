@@ -2,13 +2,14 @@
 ###################### Multipile chapters
 import os
 import sys
+import time
 project_root = os.path.abspath("/TTS_code")
 sys.path.append(project_root)
 from TTS_code.audiobooks_studio.book_chapters import *
 from TTS_code.audiobooks_studio.speech2text.STT_helper import *
 
 base = '/home/nim/'
-book_name = 'Mithras_Court'
+book_name = 'The_Dragons_of_Krynn'
 book_dir = f"{book_name}_by_scott_brick_250"
 book_path = os.path.join(base, book_dir)
 
@@ -20,7 +21,7 @@ for chapter_idx, chapter in enumerate(tqdm(chapters)):
     audio_dir = os.path.join(book_path, "audio", chapter.replace(" ", "_"))
     transcriptions_dir = os.path.join(base, book_dir, "texts", "transcriptions", chapter.replace(" ", "_"))
     transcribe_audio_folder(processor, model, audio_dir, transcriptions_dir)
-
+    time.sleep(10)
 
 
 ############################## One chapter

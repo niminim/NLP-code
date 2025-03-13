@@ -24,14 +24,14 @@ file_path = '/home/nim/Downloads/The_Dragons_of_Krynn.epub'
 epub_content = read_epub(file_path)
 
 
-ref = 'ralph_lister' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler
-chunk_size = 350
+ref = 'scott_brick' # kate_reading, amanda_leigh_cobb, ralph_lister, rebecca_soler
+chunk_size = 250
 audio_format = 'wav'
 start_zero = True # True if we have a prologue (or something else), False if we start from chapter 1
 
 
 base = '/home/nim'
-book_name = 'The_Dragons_of_Krynn_NEW5'
+book_name = 'The_Dragons_of_Krynn'
 book_path, audio_dir, text_chunks_dir, text_transcriptions_dir = create_dirs(base, book_name, ref, chunk_size)
 
 # List of chapters to find
@@ -63,7 +63,7 @@ for chapter_idx in [8]:
     processed_substring = process_chunk_add_new_section(chapter_text[100:], size=4)
     chapter_text = chapter_text[:100] + processed_substring
     chapter_text = process_text(chapter_text) # pay attention to paragraphs newlines (currently su
-    chapter_chunks = split_text_into_chunks(chapter_text, max_length=chunk_size)
+    chapter_chunks = split_text_into_chunks(chapter_text, max_chunk=chunk_size)
 
 
     # Generate audio and save the original text of each chunk
@@ -74,8 +74,8 @@ for chapter_idx in [8]:
         print(chunk)
         tts_model.tts_to_file(text=chunk, speaker_wav=f"/home/nim/Documents/{ref}.wav", language="en", file_path=filepath)
 
-        # if idx == 38:
-        #     break
+        if idx == 1:
+            break
 
     # Concat parts to assemble the chapter
     chapter_str = chapter_idx_str(chapter_idx, start_zero)
