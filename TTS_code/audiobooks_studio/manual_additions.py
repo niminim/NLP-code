@@ -42,7 +42,7 @@ input_text= 'Scourge of the Wicked \nJanet Nill\n\n\n\n\n\n\n"But I was only… 
 
 input_text = '”She hesitated, then said, “Very well, but'
 
-tts.tts_to_file(text=input_text, speaker_wav="/home/nim/Documents/ralph.wav", language="en", file_path="/home/nim/TRY.wav")
+tts.tts_to_file(text=input_text, speaker_wav="/home/nim/Documents/ralph_lister.wav", language="en", file_path="/home/nim/TRY.wav")
 
 
 
@@ -60,42 +60,42 @@ text4 = '\n\n\n\n\n\n\n\nPart Four - Darkon'
 text11 = '\n\n\n\n\n\n\n\nPart One - Into The Past'
 text22 = '\n\n\n\n\n\n\n\nPart Two - The Final Search'
 text33 = '\n\n\n\n\n\n\n\nPart Three - The Coming of Necropolis'
-text_name = 'You are listening to Lord of the Necropolis. A Ravenloft novel, Written by Gene DeWees. Narrated by AI voice-cloning of Scott Brick'
+input_texg = 'You are listening to Lord of the Necropolis. A Ravenloft novel, Written by Gene DeWees. Narrated by AI voice-cloning of Scott Brick'
 
 folder = '/home/nim/To_Sleep_With_Evil'
 tts.tts_to_file(text=text11, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/01_0-Part_One-Into_The_Past.wav")
 tts.tts_to_file(text=text22, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/12_0-Part_Two-The_Final_Search.wav")
 tts.tts_to_file(text=text33, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/21_0-Part_Three-The_Coming_of_Necropolis.wav")
 # tts.tts_to_file(text=text4, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/22_0-Part_Four-Darkon.wav")
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
 folder = '/home/nim/To_Sleep_With_Evil'
-text_name = 'You are listening to the book To Sleep With Evil. A Ravenloft novel, Written by Andrial Cardarelle. Narrated by AI voice-cloning of Scott Brick'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+input_texg = 'You are listening to the book To Sleep With Evil. A Ravenloft novel, Written by Andrial Cardarelle. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
 folder = '/home/nim/Shadowborn'
-text_name = 'You are listening to the book - Shadowborn. A Ravenloft novel, Written by William W. Connors and Carrie A. Bebris. Narrated by AI voice-cloning of Scott Brick'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+input_texg = 'You are listening to the book - Shadowborn. A Ravenloft novel, Written by William W. Connors and Carrie A. Bebris. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
 folder = '/home/nim/Black_Crusade_by_scott_brick_250'
-text_name = 'You are listening to - Dominion - Black Crusade. A Ravenloft novel written by Ari Marmell. Narrated by AI voice-cloning of Scott Brick'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
+input_texg = 'You are listening to - Dominion - Black Crusade. A Ravenloft novel written by Ari Marmell. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 folder = '/home/nim/Mithras_Court_by_scott_brick_250'
-text_name = 'You are listening to - Dominion - Mithras Court. A Ravenloft novel written by David A. Page. Narrated by AI voice-cloning of Scott Brick'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
-
-
-folder = '/home/nim/Mithras_Court_by_scott_brick_250'
-text_name = 'December, 1892 London\n\n'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-December_london.wav")
+input_texg = 'You are listening to - Dominion - Mithras Court. A Ravenloft novel written by David A. Page. Narrated by AI voice-cloning of Scott Brick'
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-book.wav")
 
 
 folder = '/home/nim/Mithras_Court_by_scott_brick_250'
-text_name = '\n\n\nMithras Court\n\n\n'
-tts.tts_to_file(text=text_name, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/02_0-Mithras_Court.wav")
+input_texg = 'December, 1892 London\n\n'
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/00-December_london.wav")
+
+
+folder = '/home/nim/Mithras_Court_by_scott_brick_250'
+input_texg = '\n\n\nMithras Court\n\n\n'
+tts.tts_to_file(text=input_texg, speaker_wav="/home/nim/Documents/scott_brick.wav", language="en", file_path=f"{folder}/02_0-Mithras_Court.wav")
 #############
 
