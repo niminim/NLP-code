@@ -17,3 +17,17 @@ image = pipe(
     generator=torch.Generator("cpu").manual_seed(0)
 ).images[0]
 image.save("lumina_demo.png")
+
+
+###################################
+
+
+from vllm import LLM, SamplingParams
+
+llm = LLM(model="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+params = SamplingParams(temperature=0.7, max_tokens=100)
+outputs = llm.generate(["Why is the sky blue?", "Explain entropy"], params)
+for out in outputs:
+    print(out.outputs[0].text)
+
+
